@@ -1,102 +1,115 @@
-<div class="card mb-3 border-0 shadow-sm" style="border-left: 5px solid var(--bs-{{ $sideColor }});">
-    <div class="card-body">
-        
-        <!-- Header: User Info & Time -->
-        <div class="d-flex justify-content-between align-items-center mb-2">
+<div class="card mb-4 border-0 shadow-sm position-relative overflow-hidden">
+    <!-- Visual Indicator Strip -->
+    <div class="position-absolute top-0 bottom-0 start-0" 
+         style="width: 6px; background-color: {{ $arg->side == 'pro' ? '#10b981' : '#ef4444' }};">
+    </div>
+
+    <div class="card-body p-4 ps-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-start mb-3 ms-2">
             <div class="d-flex align-items-center gap-2">
-                <div class="fw-bold text-dark">{{ $arg->user->name }}</div>
-                @if($arg->user->role === 'admin')
-                    <span class="badge bg-warning text-dark" style="font-size: 0.65rem;">JUDGE</span>
-                @else
-                    <span class="badge bg-light text-secondary border" style="font-size: 0.65rem;">{{ strtoupper($arg->side) }}</span>
-                @endif
+                <!-- Avatar -->
+                <img src="https://ui-avatars.com/api/?name={{ $arg->user->name }}&background=random" 
+                     class="rounded-circle" width="40" height="40">
+                
+                <div class="d-flex flex-column">
+                    <span class="fw-bold text-dark lh-1">{{ $arg->user->name }}</span>
+                    <span class="small text-muted" style="font-size: 0.75rem;">
+                        {{ $arg->side == 'pro' ? 'Agreeing' : 'Disagreeing' }} • {{ $arg->created_at->diffForHumans() }}
+                    </span>
+                </div>
             </div>
-            <small class="text-muted" style="font-size: 0.75rem;">
-                <i class="fa-regular fa-clock me-1"></i>{{ $arg->created_at->diffForHumans() }}
-            </small>
-        </div>
-        
-        <!-- Argument Body -->
-        <p class="card-text text-secondary mb-3">{{ $arg->body }}</p>
-
-        <!-- Footer: Actions (Vote & Reply) -->
-        <div class="d-flex align-items-center gap-2 pt-2 border-top">
             
-            <!-- Agree Vote -->
-            <form action="{{ route('argument.vote', $arg->id) }}" method="POST">
-                @csrf <input type="hidden" name="type" value="agree">
-                <button class="btn btn-sm btn-light text-success fw-bold" title="I Agree">
-                    <i class="fa-solid fa-check me-1"></i> 
-                    {{ $arg->votes->where('type', 'agree')->count() }}
-                </button>
-            </form>
-            
-            <!-- Disagree Vote -->
-            <form action="{{ route('argument.vote', $arg->id) }}" method="POST">
-                @csrf <input type="hidden" name="type" value="disagree">
-                <button class="btn btn-sm btn-light text-danger fw-bold" title="I Disagree">
-                    <i class="fa-solid fa-xmark me-1"></i> 
-                    {{ $arg->votes->where('type', 'disagree')->count() }}
-                </button>
-            </form>
-
-            <!-- Reply Button (Only for Active Participants) -->
-            @if(auth()->check() && isset($userSide) && $userSide)
-                <button class="btn btn-sm btn-link text-decoration-none text-muted ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#replyBox-{{ $arg->id }}">
-                    <i class="fa-solid fa-reply me-1"></i> Reply
-                </button>
+            <!-- Badge -->
+            @if($arg->side == 'pro')
+                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">PRO</span>
+            @else
+                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">CON</span>
             @endif
         </div>
 
-        <!-- Hidden Reply Form -->
-        @if(auth()->check() && isset($userSide))
-        <div class="collapse mt-3" id="replyBox-{{ $arg->id }}">
-            <div class="card card-body bg-light border-0 p-3">
-                <form action="{{ route('argument.store', $arg->debate_id) }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="parent_id" value="{{ $arg->id }}">
-                    <!-- CRITICAL FIX: Send the USER'S side, not the ARGUMENT'S side -->
-                    <input type="hidden" name="side" value="{{ $userSide }}">
-                    
-                    <div class="d-flex gap-2 mb-2 align-items-center">
-                        <span class="small text-muted">Stance:</span>
-                        <select name="reply_type" class="form-select form-select-sm" style="width: auto;">
-                            <option value="neutral">Neutral</option>
-                            <option value="agree">Agreed with {{ $arg->user->name }}</option>
-                            <option value="disagree">Disagreed with {{ $arg->user->name }}</option>
-                        </select>
-                    </div>
+        <!-- Content -->
+        <div class="ms-2">
+            <p class="text-dark mb-3" style="font-size: 1.05rem; line-height: 1.6;">
+                {{ $arg->body }}
+            </p>
 
-                    <div class="input-group">
-                        <input type="text" name="body" class="form-control form-control-sm" placeholder="Write your reply..." required>
-                        <button class="btn btn-dark btn-sm"><i class="fa-solid fa-paper-plane"></i></button>
-                    </div>
+            <!-- Actions Bar -->
+            <div class="d-flex align-items-center gap-3 pt-3 border-top">
+                <!-- Vote Agree -->
+                <form action="{{ route('argument.vote', $arg->id) }}" method="POST">
+                    @csrf <input type="hidden" name="type" value="agree">
+                    <button class="btn btn-sm btn-light rounded-pill px-3 text-success fw-bold">
+                        <i class="fa-solid fa-thumbs-up me-1"></i> {{ $arg->votes->where('type', 'agree')->count() }}
+                    </button>
                 </form>
-            </div>
-        </div>
-        @endif
 
-        <!-- Nested Replies Loop -->
-        @if($arg->replies->count() > 0)
-            <div class="mt-3 ps-3 border-start">
-                @foreach($arg->replies as $reply)
-                    <div class="mb-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <strong class="text-dark small">{{ $reply->user->name }}</strong>
-                            
-                            <!-- Stance Badge -->
-                            @if($reply->reply_type == 'agree')
-                                <span class="badge bg-success bg-opacity-10 text-success" style="font-size: 0.6rem;">Agreed</span>
-                            @elseif($reply->reply_type == 'disagree')
-                                <span class="badge bg-danger bg-opacity-10 text-danger" style="font-size: 0.6rem;">Disagreed</span>
-                            @endif
-                            
-                            <small class="text-muted ms-auto" style="font-size: 0.7rem;">{{ $reply->created_at->diffForHumans() }}</small>
-                        </div>
-                        <p class="mb-0 text-secondary small mt-1">{{ $reply->body }}</p>
-                    </div>
-                @endforeach
+                <!-- Vote Disagree -->
+                <form action="{{ route('argument.vote', $arg->id) }}" method="POST">
+                    @csrf <input type="hidden" name="type" value="disagree">
+                    <button class="btn btn-sm btn-light rounded-pill px-3 text-danger fw-bold">
+                        <i class="fa-solid fa-thumbs-down me-1"></i> {{ $arg->votes->where('type', 'disagree')->count() }}
+                    </button>
+                </form>
+
+                <!-- Reply -->
+                @if(auth()->check() && isset($userSide))
+                    <button class="btn btn-sm btn-link text-decoration-none text-muted ms-auto" 
+                            type="button" data-bs-toggle="collapse" data-bs-target="#replyBox-{{ $arg->id }}">
+                        <i class="fa-solid fa-reply me-1"></i> Reply
+                    </button>
+                @endif
             </div>
-        @endif
+
+            <!-- Reply Section -->
+            @if(auth()->check() && isset($userSide))
+            <div class="collapse mt-3" id="replyBox-{{ $arg->id }}">
+                <div class="bg-light p-3 rounded-3">
+                    <form action="{{ route('argument.store', $arg->debate_id) }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="parent_id" value="{{ $arg->id }}">
+                        <input type="hidden" name="side" value="{{ $userSide }}">
+                        
+                        <div class="d-flex gap-2 mb-2">
+                            <select name="reply_type" class="form-select form-select-sm w-auto border-0 shadow-none bg-white">
+                                <option value="neutral">Neutral</option>
+                                <option value="agree">Agree & Reply</option>
+                                <option value="disagree">Disagree & Reply</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <input type="text" name="body" class="form-control border-0 shadow-none" placeholder="Write a reply..." required>
+                            <button class="btn btn-dark"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            @endif
+
+            <!-- Nested Replies -->
+            @if($arg->replies->count() > 0)
+                <div class="mt-3 ps-3 border-start border-2">
+                    @foreach($arg->replies as $reply)
+                        <div class="bg-white p-3 rounded-3 mb-2 shadow-sm border border-light">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <img src="https://ui-avatars.com/api/?name={{ $reply->user->name }}&size=20" class="rounded-circle">
+                                <strong class="small">{{ $reply->user->name }}</strong>
+                                
+                                @if($reply->reply_type == 'agree')
+                                    <i class="fa-solid fa-check-circle text-success small" title="Agreed"></i>
+                                @elseif($reply->reply_type == 'disagree')
+                                    <i class="fa-solid fa-times-circle text-danger small" title="Disagreed"></i>
+                                @endif
+                                
+                                <span class="text-muted ms-auto" style="font-size: 0.65rem;">{{ $reply->created_at->shortAbsoluteDiffForHumans() }}</span>
+                            </div>
+                            <p class="mb-0 small text-secondary ps-4">{{ $reply->body }}</p>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
+        </div>
     </div>
 </div>

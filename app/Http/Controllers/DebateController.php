@@ -80,22 +80,28 @@ class DebateController extends Controller
 
     // --- FRONTEND / DEBATE METHODS ---
 
-    public function show($id) {
-        $debate = Debate::with(['arguments.user', 'participants.user'])->findOrFail($id);
-        
-        $pros = $debate->arguments->where('side', 'pro');
-        $cons = $debate->arguments->where('side', 'con');
+ // app/Http/Controllers/DebateController.php
 
-        $userSide = null;
-        if(Auth::check()) {
-            $participant = $debate->participants->where('user_id', Auth::id())->first();
-            if($participant) {
-                $userSide = $participant->side;
-            }
-        }
+public function show($id) {
+    $debate = Debate::with(['participants.user'])->findOrFail($id);
 
-        return view('debate.show', compact('debate', 'pros', 'cons', 'userSide'));
+    // Fetch Roots
+    $roots = $debate->arguments()
+        ->whereNull('parent_id')
+        ->with(['user', 'votes', 'replies.user', 'replies.votes']) 
+        ->latest()
+        ->get();
+
+    // Check User Side
+    $userSide = null;
+    if(Auth::check()) {
+        $p = $debate->participants->where('user_id', Auth::id())->first();
+        if($p) $userSide = $p->side;
     }
+
+    return view('debate.show', compact('debate', 'roots', 'userSide'));
+}
+
 
     public function join(Request $request, $debateId) {
         if(!Auth::check()) { return redirect()->route('login'); }

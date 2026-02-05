@@ -1,218 +1,220 @@
 @extends('layouts.app')
 
 @section('content')
+<!-- Alpine.js -->
+<script src="//unpkg.com/alpinejs" defer></script>
+
 <style>
-    .debate-header {
-        background: linear-gradient(135deg, #1e1e2d 0%, #2c2c3e 100%);
-        color: white;
-        padding: 60px 0;
-        margin-bottom: 40px;
-    }
-    .join-card {
-        border: 2px dashed #ccc;
-        background-color: #f8f9fa;
-        transition: 0.3s;
-        cursor: pointer;
-    }
-    .join-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-    .join-card-pro:hover { border-color: #198754; background-color: #e8f5e9; }
-    .join-card-con:hover { border-color: #dc3545; background-color: #fbeaea; }
+    /* DARK MODE & TREE CSS */
+    body { background-color: #0f1015; color: white; font-family: 'Inter', sans-serif; }
     
-    .participant-badge { font-size: 0.85rem; padding: 5px 10px; border-radius: 20px; margin-bottom: 5px; display: inline-block;}
-    .bg-pro { background-color: #d1e7dd; color: #0f5132; }
-    .bg-con { background-color: #f8d7da; color: #842029; }
+    /* The Canvas */
+    .debate-arena {
+        min-height: 100vh;
+        background-image: radial-gradient(#2a2a35 1px, transparent 1px);
+        background-size: 30px 30px;
+        overflow-x: auto;
+        padding-bottom: 100px;
+    }
+
+    /* TREE STRUCTURE (Org Chart Style) */
+    .tree { display: flex; justify-content: center; padding-top: 20px; }
+    .tree ul {
+        padding-top: 20px; position: relative;
+        transition: all 0.5s; display: flex; justify-content: center;
+    }
+    .tree li {
+        float: left; text-align: center; list-style-type: none;
+        position: relative; padding: 20px 10px 0 10px; transition: all 0.5s;
+    }
+    
+    /* Connectors */
+    .tree li::before, .tree li::after {
+        content: ''; position: absolute; top: 0; right: 50%;
+        border-top: 2px solid #555; width: 50%; height: 20px;
+    }
+    .tree li::after { right: auto; left: 50%; border-left: 2px solid #555; }
+    .tree li:only-child::after, .tree li:only-child::before { display: none; }
+    .tree li:only-child { padding-top: 0; }
+    .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+    .tree li:last-child::before { border-right: 2px solid #555; border-radius: 0 5px 0 0; }
+    .tree li:first-child::after { border-radius: 5px 0 0 0; }
+    .tree ul ul::before {
+        content: ''; position: absolute; top: 0; left: 50%;
+        border-left: 2px solid #555; width: 0; height: 20px;
+    }
+
+    /* CARD DESIGN */
+    .node-card {
+        background: #1e1e2d; border: 1px solid #333;
+        padding: 15px; border-radius: 12px;
+        min-width: 280px; max-width: 320px;
+        display: inline-block; text-align: left;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        position: relative; z-index: 10;
+        transition: 0.3s;
+    }
+    .node-card:hover { transform: translateY(-5px); border-color: #666; }
+    
+    .border-pro { border-top: 4px solid #10b981; } /* Green */
+    .border-con { border-top: 4px solid #ef4444; } /* Red */
+    .border-root { border-top: 4px solid #fff; background: #222; }
+
+    /* Live Badge Animation */
+    .live-indicator {
+        width: 10px; height: 10px; background: red; border-radius: 50%;
+        display: inline-block; margin-right: 5px;
+        box-shadow: 0 0 0 rgba(255, 0, 0, 0.4);
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+    }
+
+    /* Toggle Button */
+    .toggle-btn {
+        position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
+        width: 22px; height: 22px; background: #444; color: #fff;
+        border-radius: 50%; font-size: 12px; line-height: 20px;
+        cursor: pointer; border: 2px solid #777; z-index: 20;
+    }
 </style>
 
-<!-- 1. HERO SECTION -->
-<div class="debate-header text-center shadow-sm">
-    <div class="container">
-        <h1 class="display-4 fw-bold mb-3">{{ $debate->title }}</h1>
-        <p class="lead text-white-50 mx-auto" style="max-width: 800px;">
-            {{ $debate->description }}
-        </p>
-
-        <div class="d-flex justify-content-center gap-3 mt-4">
-            @if($debate->isFull())
-                <span class="badge bg-danger fs-6 px-3 py-2">Debate Full</span>
-            @else
-                <span class="badge bg-success fs-6 px-3 py-2">Active</span>
-                <span class="badge bg-light text-dark fs-6 px-3 py-2">
-                    {{ $debate->spotsLeft() }} Spots Remaining
-                </span>
-            @endif
-            <span class="badge bg-dark border fs-6 px-3 py-2">
-                <i class="fa-solid fa-users me-1"></i> {{ $debate->participants->count() }} Joined
-            </span>
-        </div>
-    </div>
-</div>
-
-<div class="container-fluid px-4">
+<div class="debate-arena" x-data="debateLogic()">
     
-    <!-- 2. ADMIN PANEL (Only Visible to Admin) -->
-    @auth
-        @if(Auth::user()->role === 'admin')
-        <div class="row mb-5">
-            <div class="col-md-8 offset-md-2">
-                <div class="card border-warning shadow-sm">
-                    <div class="card-header bg-warning bg-opacity-25 fw-bold text-dark">
-                        <i class="fa-solid fa-shield-halved me-2"></i> Admin Control Panel
-                    </div>
-                    <div class="card-body">
-                        <h6 class="text-muted mb-3 text-center text-uppercase small ls-1">Current Participants</h6>
-                        <div class="row">
-                            <div class="col-md-6 text-center border-end">
-                                <strong class="text-success d-block mb-2">PRO SIDE</strong>
-                                @forelse($debate->participants->where('side', 'pro') as $p)
-                                    <span class="participant-badge bg-pro">
-                                        <i class="fa-solid fa-user me-1"></i> {{ $p->user->name }}
-                                    </span>
-                                @empty
-                                    <small class="text-muted">No one joined yet</small>
-                                @endforelse
-                            </div>
-                            <div class="col-md-6 text-center">
-                                <strong class="text-danger d-block mb-2">CON SIDE</strong>
-                                @forelse($debate->participants->where('side', 'con') as $p)
-                                    <span class="participant-badge bg-con">
-                                        <i class="fa-solid fa-user me-1"></i> {{ $p->user->name }}
-                                    </span>
-                                @empty
-                                    <small class="text-muted">No one joined yet</small>
-                                @endforelse
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- TOP BAR -->
+    <div class="d-flex justify-content-between align-items-center p-3 sticky-top bg-dark border-bottom border-secondary shadow">
+        <div class="d-flex align-items-center">
+            <div class="live-indicator"></div>
+            <span class="fw-bold text-uppercase ls-1 me-3 text-danger">LIVE DEBATE</span>
+            <h5 class="m-0 d-none d-md-block text-white">{{ Str::limit($debate->title, 50) }}</h5>
         </div>
-        @endif
-    @endauth
-
-    <!-- 3. MAIN DEBATE COLUMNS -->
-    <div class="row">
-        
-        <!-- ================= PRO COLUMN ================= -->
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-header bg-success text-white text-center py-3">
-                    <h4 class="m-0 fw-bold"><i class="fa-solid fa-thumbs-up me-2"></i>PRO (Agreed)</h4>
-                    <small>Supporters of the statement</small>
-                </div>
-                <div class="card-body bg-light" style="min-height: 500px;">
-                    
-                    <!-- LOGIC BLOCK: PRO SIDE -->
-                    @if(Auth::check() && Auth::user()->role === 'admin')
-                        <!-- Admin sees no input -->
-                        <div class="alert alert-secondary text-center small mb-4">You are the Judge (Admin View)</div>
-
-                    @elseif(Auth::check() && $userSide === 'pro')
-                        <!-- JOINED AS PRO: Show Input -->
-                        <div class="card mb-4 border-success shadow-sm">
-                            <div class="card-body">
-                                <h6 class="text-success fw-bold"><i class="fa-solid fa-pen-nib me-2"></i>State your Argument</h6>
-                                <form action="{{ route('argument.store', $debate->id) }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="side" value="pro">
-                                    <textarea name="body" class="form-control mb-2" rows="3" placeholder="Why do you agree?" required></textarea>
-                                    <button class="btn btn-success w-100 fw-bold">Post Argument</button>
-                                </form>
-                            </div>
-                        </div>
-                    
-                    @elseif(Auth::check() && $userSide === 'con')
-                        <!-- JOINED AS CON: Show nothing here -->
-
-                    @elseif(!$debate->isFull())
-                        <!-- NOT JOINED: Show Join Button -->
-                        <div class="card mb-4 join-card join-card-pro p-4 text-center">
-                            <h5 class="text-success fw-bold">Agree with this?</h5>
-                            <p class="text-muted small">Join the debate as a PRO member to participate.</p>
-                            
-                            @auth
-                                <form action="{{ route('debate.join', $debate->id) }}" method="POST">
-                                    @csrf <input type="hidden" name="side" value="pro">
-                                    <button class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
-                                        Join as PRO Debater
-                                    </button>
-                                </form>
-                            @else
-                                <a href="{{ route('login') }}" class="btn btn-outline-success rounded-pill px-4">Login to Join</a>
-                            @endauth
-                        </div>
-                    @endif
-
-                    <!-- PRO ARGUMENTS LIST -->
-                    @foreach($pros as $arg)
-                        @include('debate.partials.argument_card', ['arg' => $arg, 'sideColor' => 'success', 'userSide' => $userSide ])
-                    @endforeach
-
-                </div>
-            </div>
+        <div class="d-flex gap-2">
+            @auth
+                @if($userSide)
+                    <span class="badge {{ $userSide == 'pro' ? 'bg-success' : 'bg-danger' }}">
+                        YOU ARE: {{ strtoupper($userSide) }}
+                    </span>
+                @endif
+            @else
+                <a href="{{ route('login') }}" class="btn btn-sm btn-outline-light">Login to Debate</a>
+            @endauth
         </div>
-
-        <!-- ================= CON COLUMN ================= -->
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-header bg-danger text-white text-center py-3">
-                    <h4 class="m-0 fw-bold"><i class="fa-solid fa-thumbs-down me-2"></i>CON (Disagreed)</h4>
-                    <small>Opponents of the statement</small>
-                </div>
-                <div class="card-body bg-light" style="min-height: 500px;">
-                    
-                    <!-- LOGIC BLOCK: CON SIDE -->
-                    @if(Auth::check() && Auth::user()->role === 'admin')
-                        <!-- Admin sees no input -->
-                        <div class="alert alert-secondary text-center small mb-4">You are the Judge (Admin View)</div>
-
-                    @elseif(Auth::check() && $userSide === 'con')
-                        <!-- JOINED AS CON: Show Input -->
-                        <div class="card mb-4 border-danger shadow-sm">
-                            <div class="card-body">
-                                <h6 class="text-danger fw-bold"><i class="fa-solid fa-pen-nib me-2"></i>State your Argument</h6>
-                                <form action="{{ route('argument.store', $debate->id) }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="side" value="con">
-                                    <textarea name="body" class="form-control mb-2" rows="3" placeholder="Why do you disagree?" required></textarea>
-                                    <button class="btn btn-danger w-100 fw-bold">Post Argument</button>
-                                </form>
-                            </div>
-                        </div>
-                    
-                    @elseif(Auth::check() && $userSide === 'pro')
-                        <!-- JOINED AS PRO: Show nothing here -->
-
-                    @elseif(!$debate->isFull())
-                        <!-- NOT JOINED: Show Join Button -->
-                        <div class="card mb-4 join-card join-card-con p-4 text-center">
-                            <h5 class="text-danger fw-bold">Disagree with this?</h5>
-                            <p class="text-muted small">Join the debate as a CON member to participate.</p>
-                            
-                            @auth
-                                <form action="{{ route('debate.join', $debate->id) }}" method="POST">
-                                    @csrf <input type="hidden" name="side" value="con">
-                                    <button class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm">
-                                        Join as CON Debater
-                                    </button>
-                                </form>
-                            @else
-                                <a href="{{ route('login') }}" class="btn btn-outline-danger rounded-pill px-4">Login to Join</a>
-                            @endauth
-                        </div>
-                    @endif
-
-                    <!-- CON ARGUMENTS LIST -->
-                    @foreach($cons as $arg)
-                        @include('debate.partials.argument_card', ['arg' => $arg, 'sideColor' => 'danger', 'userSide' => $userSide ])
-                    @endforeach
-
-                </div>
-            </div>
-        </div>
-
     </div>
+
+    <!-- THE HIERARCHICAL TREE -->
+    <div class="tree">
+        <ul>
+            <li>
+                <!-- ROOT NODE (Main Topic) -->
+                <div class="node-card border-root text-center mx-auto" style="min-width: 400px;">
+                    <h4 class="fw-bold mb-2">{{ $debate->title }}</h4>
+                    <p class="text-white-50 small mb-3">{{ $debate->description }}</p>
+                    
+                    <button @click="openAction(null, '{{ $debate->title }}')" class="btn btn-primary btn-sm w-100 rounded-pill">
+                        <i class="fa-solid fa-plus"></i> Submit First Argument
+                    </button>
+                </div>
+
+                <!-- Children -->
+                <ul>
+                    @foreach($roots as $arg)
+                        @include('debate.partials.tree_node', ['arg' => $arg])
+                    @endforeach
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <!-- MODAL: JOIN DEBATE (Select Side) -->
+    <div x-show="showJoinModal" style="display: none;" 
+         class="position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-90 d-flex justify-content-center align-items-center" style="z-index: 3000;">
+        <div class="card bg-dark text-white border-secondary shadow-lg p-4" style="width: 400px;">
+            <h4 class="text-center mb-3">Choose Your Side</h4>
+            <p class="text-center text-muted small mb-4">You must pick a stance to participate in this debate.</p>
+            
+            <form action="{{ route('debate.join', $debate->id) }}" method="POST">
+                @csrf
+                <button name="side" value="pro" class="btn btn-outline-success w-100 mb-3 py-3 fw-bold">
+                    <i class="fa-solid fa-check"></i> I AGREE (Join PRO)
+                </button>
+                <button name="side" value="con" class="btn btn-outline-danger w-100 py-3 fw-bold">
+                    <i class="fa-solid fa-times"></i> I DISAGREE (Join CON)
+                </button>
+            </form>
+            <button @click="showJoinModal = false" class="btn btn-link text-white-50 mt-3 w-100">Cancel</button>
+        </div>
+    </div>
+
+    <!-- MODAL: REPLY / POST ARGUMENT -->
+    <div x-show="showReplyModal" style="display: none;"
+         class="position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-80 d-flex justify-content-center align-items-center" style="z-index: 3000;">
+        <div class="card bg-dark text-white border-secondary shadow-lg" style="width: 500px;">
+            <div class="card-header border-secondary d-flex justify-content-between">
+                <span>Argue with <strong x-text="targetName"></strong></span>
+                <button @click="showReplyModal = false" class="btn btn-sm text-white"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('argument.store', $debate->id) }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="parent_id" :value="targetId">
+                    <input type="hidden" name="side" value="{{ $userSide }}">
+
+                    <!-- Visual Context -->
+                    <div class="alert alert-dark border border-secondary small fst-italic text-white-50">
+                        Replying as <span class="fw-bold {{ $userSide == 'pro' ? 'text-success' : 'text-danger' }}">{{ strtoupper($userSide ?? 'USER') }}</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="small text-muted mb-2">Reply Logic:</label>
+                        <select name="reply_type" class="form-select bg-dark text-white border-secondary">
+                            <option value="neutral">Neutral Point</option>
+                            <option value="agree">Support their point</option>
+                            <option value="disagree">Counter their point</option>
+                        </select>
+                    </div>
+
+                    <textarea name="body" class="form-control bg-black text-white border-secondary mb-3" rows="4" placeholder="Construct your argument..." required></textarea>
+                    <button class="btn btn-light w-100 fw-bold">Post Argument</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+<!-- LOGIC SCRIPT -->
+<script>
+    function debateLogic() {
+        return {
+            showJoinModal: false,
+            showReplyModal: false,
+            isLoggedIn: {{ Auth::check() ? 'true' : 'false' }},
+            hasJoined: {{ isset($userSide) && $userSide ? 'true' : 'false' }},
+            targetId: null,
+            targetName: '',
+
+            openAction(id, name) {
+                // 1. Check Login
+                if (!this.isLoggedIn) {
+                    window.location.href = "{{ route('login') }}";
+                    return;
+                }
+                
+                // 2. Check if Joined Side
+                if (!this.hasJoined) {
+                    this.showJoinModal = true;
+                    return;
+                }
+
+                // 3. Open Reply Box
+                this.targetId = id;
+                this.targetName = name;
+                this.showReplyModal = true;
+            }
+        }
+    }
+</script>
 @endsection
