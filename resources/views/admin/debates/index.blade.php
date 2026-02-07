@@ -49,7 +49,7 @@
                         $isCustom = isset($targetDebate) && !is_null($targetDebate->max_participants);
                     @endphp
 
-                    <div class="row mb-3">
+                    <div class="row mb-3 ">
                         <label class="form-label fw-bold small text-uppercase text-muted">Participant Limit</label>
                         <div class="col-md-6">
                             <select name="limit_option" class="form-select bg-light border-0" id="limitSelect" onchange="toggleLimitInput()">

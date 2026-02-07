@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $debate ? $debate->title : 'Debate Platform' }}</title>
+    <title>{{ $debate ? $debate->title : 'Logically Debate' }}</title>
+    <link rel="icon" href="https://i.ibb.co.com/s916M5xG/Logo-01.png" type="image/png">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
@@ -793,9 +794,30 @@
 
 <!-- Top Navbar -->
 <nav class="navbar">
-    <div class="navbar-brand">
-        <i class="fas fa-comments"></i> DebateForum
+    <div class="sidebar-brand">
+        <!-- Logo -->
+        <a href="{{ route('home') }}">
+            <img src="https://i.ibb.co.com/gbLB6Dqj/Logo-02.png" alt="Logically Debate">
+        </a>
     </div>
+    <style>
+        .sidebar-brand {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+        }
+        
+        .sidebar-brand img {
+            max-height: 28px;
+            width: auto;
+        }
+         @media (max-width: 991.98px) {
+            .sidebar-brand {
+                justify-content: center;
+            }
+        }
+    </style>
     @auth
         <div class="navbar-user">
             <span class="user-name-nav">{{ Auth::user()->name }}</span>
