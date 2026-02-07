@@ -5,83 +5,154 @@ namespace App\Http\Controllers;
 use App\Models\Debate;
 use App\Models\Argument;
 use App\Models\Vote;
+use App\Models\User;
 use App\Models\DebateParticipant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class FrontendController extends Controller
 {
     public function index() {
-    $debate = Debate::where('status', 'active')->latest()->first();
+        $debate = Debate::where('status', 'active')->latest()->first();
 
-    $roots = collect();
-    if ($debate) {
-        $roots = $debate->arguments()
-            ->whereNull('parent_id') // শুধুমাত্র মেইন আর্গুমেন্টগুলো আনবে
-            ->with(['user', 'votes', 'replies']) // মডেলের 'replies' এর ভেতর already recursive load দেওয়া আছে
-            ->latest()
-            ->get();
+        $roots = collect();
+        if ($debate) {
+            $roots = $debate->arguments()
+                ->whereNull('parent_id')
+                ->with(['user', 'votes', 'replies.user', 'replies.votes'])
+                ->latest()
+                ->get();
+        }
+
+        // লজিক: ইউজার লগইন থাকলেও, সে এই ডিবেটে জয়েন করেছে কিনা চেক করা
+        $userSide = null;
+        if(Auth::check() && $debate) {
+            $participant = DebateParticipant::where('debate_id', $debate->id)
+                ->where('user_id', Auth::id())
+                ->first();
+            
+            if($participant) {
+                $userSide = $participant->side;
+            }
+        }
+
+        return view('home', compact('debate', 'roots', 'userSide'));
     }
 
-    // বাকি কোড অপরিবর্তিত থাকবে...
-    $userSide = null;
-    if(Auth::check() && $debate) {
-        $participant = DebateParticipant::where('debate_id', $debate->id)
-            ->where('user_id', Auth::id())
-            ->first();
-        if($participant) $userSide = $participant->side;
+    public function showJoinForm($debateId) {
+        $debate = Debate::findOrFail($debateId);
+        
+        // যদি ইউজার অলরেডি জয়েন করা থাকে (পক্ষ নিয়ে থাকে), তবে তাকে জয়েন পেজে যেতে দেব না
+        if(Auth::check()) {
+            $participant = DebateParticipant::where('debate_id', $debateId)
+                ->where('user_id', Auth::id())
+                ->exists();
+            
+            if($participant) {
+                return redirect()->route('home')->with('info', 'You have already joined this debate.');
+            }
+        }
+
+        return view('frontend.auth.debate-join', compact('debate'));
     }
 
-    return view('home', compact('debate', 'roots', 'userSide'));
-}
+   // app/Http/Controllers/FrontendController.php
 
-   public function storeArgument(Request $request, $debateId) {
-    // 1. Validation
+public function processJoin(Request $request, $debateId) {
+    // ১. ভ্যালিডেশন
     $request->validate([
-        'body' => 'required',
-        // 'side' => 'required' // এডমিনের জন্য এটি কমেন্ট করে রাখতে পারেন টেস্টিং এর সময়
+        'name' => 'required|string|max:255',
+        'side' => 'required|in:pro,con',
+        'avatar' => 'nullable|image|max:2048',
     ]);
 
-    // 2. Determine Side (Fallback for Admin)
-    $side = $request->side;
-    
-    // যদি সাধারণ ইউজার হয়, চেক করুন সে সাইড সুইচ করছে কিনা
-    if (Auth::user()->role !== 'admin') {
+    $user = Auth::user(); // বর্তমান ইউজার (Admin বা অন্য কেউ)
+
+    // ২. যদি ইউজার লগইন না থাকে (Guest), তবে নতুন ইউজার বানাবো
+    if (!$user) {
+        $avatarPath = null;
+        if ($request->hasFile('avatar')) {
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+        } else {
+            // ডিফল্ট অ্যাভাতার
+            $avatarPath = 'avatars/default.png'; 
+        }
+
+        $fakeEmail = Str::slug($request->name) . rand(1000, 9999) . '@debater.com';
+        
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $fakeEmail,
+            'password' => Hash::make('password123'),
+            'avatar' => $avatarPath,
+        ]);
+
+        Auth::login($user);
+    } else {
+        // ৩. যদি ইউজার অলরেডি লগইন থাকে (যেমন: Admin)
+        // আমরা চাইলে তার নাম বা ছবি আপডেট করতে পারি, অথবা শুধু পার্টিসিপেন্ট টেবিলে যোগ করতে পারি।
+        // এখানে ইউজার যদি নতুন ছবি দেয়, তা আপডেট করে দিচ্ছি:
+        if ($request->hasFile('avatar')) {
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $avatarPath;
+            $user->save();
+        }
+        // নাম আপডেট (অপশনাল, যদি চান অ্যাডমিন নাম পাল্টে ফেলুক)
+        // $user->name = $request->name;
+        // $user->save();
+    }
+
+    // ৪. ডিবেট পার্টিসিপেন্ট টেবিলে এন্ট্রি (updateOrCreate ব্যবহার করছি যাতে ডুপ্লিকেট না হয়)
+    DebateParticipant::updateOrCreate(
+        [
+            'debate_id' => $debateId,
+            'user_id' => $user->id
+        ],
+        [
+            'side' => $request->side
+        ]
+    );
+
+    // ৫. রিডাইরেক্ট এবং স্ক্রল (Anchor Tag ব্যবহার করা হয়েছে)
+    // '#disqus-card' দিলে পেজ লোড হওয়ার পর সরাসরি কমেন্ট বক্সে চলে যাবে
+    return redirect()->to(route('home') . '#disqus-card')->with('success', 'You have joined successfully! Now you can post.');
+}
+
+    public function storeArgument(Request $request, $debateId) {
+        if(!Auth::check()) {
+            return redirect()->route('debate.join_form', $debateId);
+        }
+
+        // চেক: ইউজার কি পার্টিসিপেন্ট? (এডমিন হলেও এখানে আটকাবে যদি সে জয়েন না করে)
         $participant = DebateParticipant::where('debate_id', $debateId)
             ->where('user_id', Auth::id())
             ->first();
 
         if (!$participant) {
-            return redirect()->back()->with('error', 'You must join the debate first!');
+            return redirect()->route('debate.join_form', $debateId)
+                ->with('error', 'Please choose a side to participate in this debate.');
         }
-        $side = $participant->side;
-    } else {
-        // এডমিন হলে ডিফল্ট 'pro' অথবা ফর্ম থেকে আসা ভ্যালু নিন
-        $side = $request->side ?? 'pro';
+
+        $request->validate(['body' => 'required']);
+
+        Argument::create([
+            'debate_id' => $debateId,
+            'user_id' => Auth::id(),
+            'side' => $participant->side, // ডাটাবেস থেকে ইউজারের পক্ষ নেওয়া হচ্ছে
+            'body' => $request->body,
+            'parent_id' => $request->parent_id ?? null,
+            'reply_type' => $request->reply_type ?? 'neutral',
+        ]);
+
+        return redirect()->back()->with('success', 'Comment posted!');
     }
 
-    // 3. Create Argument
-    Argument::create([
-        'debate_id' => $debateId,
-        'user_id' => Auth::id(),
-        'side' => $side,
-        'body' => $request->body,
-        'parent_id' => $request->parent_id ?? null, // Parent ID রিসিভ হচ্ছে কিনা নিশ্চিত করুন
-        'reply_type' => $request->reply_type ?? 'neutral',
-    ]);
-
-    return redirect()->back()->with('success', 'Argument posted!');
-}
-
+    // vote method same as before...
     public function vote(Request $request, $argumentId) {
-        if(!Auth::check()) return redirect()->route('login');
-        
-        // Use updateOrCreate for cleaner code
-        Vote::updateOrCreate(
-            ['user_id' => Auth::id(), 'argument_id' => $argumentId],
-            ['type' => $request->type]
-        );
-
+        if(!Auth::check()) return redirect()->route('debate.join_form', Argument::find($argumentId)->debate_id);
+        Vote::updateOrCreate(['user_id' => Auth::id(), 'argument_id' => $argumentId], ['type' => $request->type]);
         return redirect()->back();
     }
 }

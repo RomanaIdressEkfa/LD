@@ -78,10 +78,6 @@ class DebateController extends Controller
         return redirect()->route('admin.debates.index')->with('success', 'Debate Deleted!');
     }
 
-    // --- FRONTEND / DEBATE METHODS ---
-
- // app/Http/Controllers/DebateController.php
-
 public function show($id) {
     $debate = Debate::with(['participants.user'])->findOrFail($id);
 

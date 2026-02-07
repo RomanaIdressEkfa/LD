@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Feb 02, 2026 at 12:04 PM
+-- Generation Time: Feb 07, 2026 at 08:08 AM
 -- Server version: 5.7.39
 -- PHP Version: 8.3.29
 
@@ -47,7 +47,19 @@ INSERT INTO `arguments` (`id`, `debate_id`, `user_id`, `side`, `body`, `parent_i
 (3, 2, 1, 'pro', 'yes', NULL, 'neutral', '2026-02-02 06:02:58', '2026-02-02 06:02:58'),
 (4, 2, 1, 'con', 'no', NULL, 'neutral', '2026-02-02 06:03:06', '2026-02-02 06:03:06'),
 (5, 2, 1, 'pro', 'dfd', NULL, 'neutral', '2026-02-02 06:03:23', '2026-02-02 06:03:23'),
-(6, 2, 1, 'pro', 'sfdgd', NULL, 'neutral', '2026-02-02 06:03:26', '2026-02-02 06:03:26');
+(6, 2, 1, 'pro', 'sfdgd', NULL, 'neutral', '2026-02-02 06:03:26', '2026-02-02 06:03:26'),
+(7, 2, 1, 'pro', 'fdgdhf', NULL, 'neutral', '2026-02-05 01:00:05', '2026-02-05 01:00:05'),
+(8, 2, 1, 'con', 'fghnfg', NULL, 'neutral', '2026-02-05 01:00:10', '2026-02-05 01:00:10'),
+(9, 2, 1, 'pro', 'dfsdfd', NULL, 'agree', '2026-02-05 04:46:45', '2026-02-05 04:46:45'),
+(10, 2, 1, 'pro', 'dsdfd', NULL, 'agree', '2026-02-05 04:50:59', '2026-02-05 04:50:59'),
+(11, 2, 1, 'pro', 'naa', 10, 'neutral', '2026-02-07 00:34:11', '2026-02-07 00:34:11'),
+(12, 2, 1, 'pro', 'dsdfsf', 11, 'neutral', '2026-02-07 00:35:18', '2026-02-07 00:35:18'),
+(13, 2, 1, 'pro', 'ASDADFSF', 9, 'neutral', '2026-02-07 00:35:41', '2026-02-07 00:35:41'),
+(14, 2, 1, 'pro', 'SDAFDFGDG', NULL, 'neutral', '2026-02-07 00:36:03', '2026-02-07 00:36:03'),
+(15, 2, 1, 'pro', 'fdgfdhfgh', NULL, 'neutral', '2026-02-07 00:54:54', '2026-02-07 00:54:54'),
+(16, 2, 1, 'pro', 'fdghf', 8, 'neutral', '2026-02-07 00:55:27', '2026-02-07 00:55:27'),
+(17, 2, 1, 'pro', 'ghfhfgy', 12, 'neutral', '2026-02-07 01:19:15', '2026-02-07 01:19:15'),
+(18, 2, 1, 'pro', 'hkjojkjhuh', 4, 'neutral', '2026-02-07 02:06:43', '2026-02-07 02:06:43');
 
 -- --------------------------------------------------------
 
@@ -119,6 +131,13 @@ CREATE TABLE `debate_participants` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `debate_participants`
+--
+
+INSERT INTO `debate_participants` (`id`, `debate_id`, `user_id`, `side`, `created_at`, `updated_at`) VALUES
+(1, 2, 1, 'pro', '2026-02-07 00:54:42', '2026-02-07 00:54:42');
 
 -- --------------------------------------------------------
 
@@ -228,9 +247,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('cTSxrzIfx4gLy9z0493DmTZkGonB4sE9IVZSbynd', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiY3FsaHYxVWVXZVlmWHZ2YTdaeWFZcG9RM09oejRRTkpFanNrVlZFUyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTt9', 1770020049),
-('E8PswT4DYBmrHLmldw6lzK0sclwIBvNCPyJCyABX', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiNjRQSFpOSFQ5c2FQTm12V1N6Zlhtd0dRbnk3cmFHUk5oV29Dd0FXbCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi91c2VycyI7czo1OiJyb3V0ZSI7czoxNzoiYWRtaW4udXNlcnMuaW5kZXgiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1770032940),
-('g7GpyWbwgKkXMt27O5xZ5091jzW0j9BDqBjhPG5p', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiY2d5dHFqOWhGbEViOGNDZG1iMXczYWk2VTk3MG9uYk53VEFkWlV4WiI7czozOiJ1cmwiO2E6MDp7fXM6OToiX3ByZXZpb3VzIjthOjI6e3M6MzoidXJsIjtzOjIxOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAiO3M6NToicm91dGUiO3M6NDoiaG9tZSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1770033807);
+('CG7qrxfeTM2eXofC6NtGkvpoQUsk65HBy9ykeOLE', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoidkhDNlpVRUNOSTFGNWdKSld1dkdCSm5XcjhGenlnVXltZnNEUWV5dyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjQ6Imh0dHA6Ly9sb2dpYy1kZWJhdGUudGVzdCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTt9', 1770451603);
 
 -- --------------------------------------------------------
 
@@ -247,16 +264,17 @@ CREATE TABLE `users` (
   `role` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'user',
   `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `avatar` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `role`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Logically Debate Admin', 'admin@gmail.com', '2026-02-02 00:06:17', '$2y$12$FEoB0/q7h.DWK3Et6q1mc.GtZ/CpXaNnc.IdbFmTw8PJFySzfn3rG', 'admin', 'aY73FOSfX82xnn24pYYAISNlZsbMMUjlZBaGMOuk1hQaHthfjHaaNKIZ4ENM', '2026-02-02 00:06:18', '2026-02-02 00:06:18'),
-(2, 'Romana Idress Ekfa', 'logicallydebate@gmail.com', NULL, '$2y$12$.YXnYTHRKvuB.zUX5EIrXuesAf88vuKIc.SU6P3UwiTuRFIXhWyB2', 'user', NULL, '2026-02-02 00:07:58', '2026-02-02 00:07:58');
+INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `role`, `remember_token`, `created_at`, `updated_at`, `avatar`) VALUES
+(1, 'Logically Debate Admin', 'admin@gmail.com', '2026-02-02 00:06:17', '$2y$12$FEoB0/q7h.DWK3Et6q1mc.GtZ/CpXaNnc.IdbFmTw8PJFySzfn3rG', 'admin', '3fig9BfdMM9mGjkroDspgb3tb0saCz0oAjAwxOKFGYDNTTAWDhCVKUyaxrab', '2026-02-02 00:06:18', '2026-02-02 00:06:18', NULL),
+(2, 'Romana Idress Ekfa', 'logicallydebate@gmail.com', NULL, '$2y$12$.YXnYTHRKvuB.zUX5EIrXuesAf88vuKIc.SU6P3UwiTuRFIXhWyB2', 'user', NULL, '2026-02-02 00:07:58', '2026-02-02 00:07:58', NULL);
 
 -- --------------------------------------------------------
 
@@ -278,8 +296,11 @@ CREATE TABLE `votes` (
 --
 
 INSERT INTO `votes` (`id`, `user_id`, `argument_id`, `type`, `created_at`, `updated_at`) VALUES
-(2, 1, 3, 'agree', '2026-02-02 06:03:12', '2026-02-02 06:03:16'),
-(3, 1, 4, 'disagree', '2026-02-02 06:03:18', '2026-02-02 06:03:18');
+(2, 1, 3, 'disagree', '2026-02-02 06:03:12', '2026-02-05 00:50:30'),
+(3, 1, 4, 'agree', '2026-02-02 06:03:18', '2026-02-05 00:47:38'),
+(4, 1, 5, 'disagree', '2026-02-05 00:50:33', '2026-02-05 00:50:37'),
+(5, 1, 10, 'agree', '2026-02-05 05:10:18', '2026-02-05 05:10:18'),
+(6, 1, 9, 'agree', '2026-02-07 00:17:16', '2026-02-07 00:17:16');
 
 --
 -- Indexes for dumped tables
@@ -385,19 +406,19 @@ ALTER TABLE `votes`
 -- AUTO_INCREMENT for table `arguments`
 --
 ALTER TABLE `arguments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `debates`
 --
 ALTER TABLE `debates`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `debate_participants`
 --
 ALTER TABLE `debate_participants`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -427,7 +448,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `votes`
 --
 ALTER TABLE `votes`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
