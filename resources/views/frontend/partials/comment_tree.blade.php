@@ -1,5 +1,3 @@
-{{-- resources/views/partials/comment-tree.blade.php --}}
-
 <div class="comment-thread">
     <!-- Main Comment -->
     <div class="comment-wrapper">
@@ -41,7 +39,11 @@
                 <form action="{{ route('argument.store', $debate->id) }}" method="POST">
                     @csrf
                     <input type="hidden" name="parent_id" value="{{ $argument->id }}">
-                    <input type="hidden" name="side" value="{{ $userSide }}">
+                    
+                    {{-- 
+                       Removed the hidden input for 'side'.
+                       We now pass the side value via the buttons below.
+                    --}}
                     
                     <textarea class="reply-textarea" 
                               name="body" 
@@ -50,12 +52,13 @@
                               required></textarea>
                     
                     <div class="reply-action-buttons" id="replyButtons-{{ $argument->id }}">
-                        <button type="submit" class="reply-btn {{ $userSide == 'pro' ? 'btn-agreed' : 'btn-disagreed' }}">
-                            @if($userSide == 'pro')
-                                <i class="fas fa-thumbs-up"></i> AGREED
-                            @else
-                                <i class="fas fa-thumbs-down"></i> DISAGREED
-                            @endif
+                        {{-- Show Both Buttons --}}
+                        <button type="submit" name="side" value="pro" class="reply-btn btn-agreed">
+                            <i class="fas fa-thumbs-up"></i> AGREED
+                        </button>
+
+                        <button type="submit" name="side" value="con" class="reply-btn btn-disagreed">
+                            <i class="fas fa-thumbs-down"></i> DISAGREED
                         </button>
                     </div>
                 </form>

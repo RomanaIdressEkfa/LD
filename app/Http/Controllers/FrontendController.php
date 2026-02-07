@@ -137,10 +137,11 @@ public function processJoin(Request $request, $debateId) {
 
         $request->validate(['body' => 'required']);
 
-        Argument::create([
+       Argument::create([
             'debate_id' => $debateId,
             'user_id' => Auth::id(),
-            'side' => $participant->side, // ডাটাবেস থেকে ইউজারের পক্ষ নেওয়া হচ্ছে
+            // Use the request input (clicked button value), fallback to participant side if missing
+            'side' => $request->side ?? $participant->side, 
             'body' => $request->body,
             'parent_id' => $request->parent_id ?? null,
             'reply_type' => $request->reply_type ?? 'neutral',

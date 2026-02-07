@@ -911,73 +911,144 @@
                     <p class="post-description">{{ $debate->description }}</p>
                 </div>
 
+               {{-- এই অংশটি রিপ্লেস করুন (Replace this section) --}}
                 <div class="post-stats">
                     <div class="reactions-summary">
-                        <div class="reaction-icons">
-                            <div class="reaction-bubble bubble-agreed">
-                                <i class="fas fa-thumbs-up"></i>
-                            </div>
-                            <div class="reaction-bubble bubble-disagreed">
-                                <i class="fas fa-thumbs-down"></i>
-                            </div>
-                        </div>
-                        <span>
-                            {{ $debate->participants->where('side', 'pro')->count() }} Agreed · 
-                            {{ $debate->participants->where('side', 'con')->count() }} Disagreed
-                        </span>
+                        {{-- AGREED BUTTON FORM --}}
+                        <form action="{{ route('debate.join', $debate->id) }}" method="POST" style="display: inline;">
+                            @csrf
+                            <input type="hidden" name="side" value="pro">
+                            <button type="submit" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0;">
+                                <div class="reaction-bubble bubble-agreed" style="transition: transform 0.2s;">
+                                    <i class="fas fa-thumbs-up"></i>
+                                </div>
+                                <span style="font-weight: 600; color: {{ $userSide == 'pro' ? 'var(--primary-blue)' : 'var(--text-secondary)' }}">
+                                    {{ $debate->participants->where('side', 'pro')->count() }} Agreed
+                                </span>
+                            </button>
+                        </form>
+                        
+                        <span style="margin: 0 8px;">·</span>
+
+                        {{-- DISAGREED BUTTON FORM --}}
+                        <form action="{{ route('debate.join', $debate->id) }}" method="POST" style="display: inline;">
+                            @csrf
+                            <input type="hidden" name="side" value="con">
+                            <button type="submit" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0;">
+                                <div class="reaction-bubble bubble-disagreed" style="transition: transform 0.2s;">
+                                    <i class="fas fa-thumbs-down"></i>
+                                </div>
+                                <span style="font-weight: 600; color: {{ $userSide == 'con' ? 'var(--primary-red)' : 'var(--text-secondary)' }}">
+                                    {{ $debate->participants->where('side', 'con')->count() }} Disagreed
+                                </span>
+                            </button>
+                        </form>
                     </div>
+
+                    {{-- Comment Count Display --}}
                     <div>
                         <span>{{ $debate->arguments->count() }} Comments</span>
                     </div>
                 </div>
 
-                <!-- Comment Input Section -->
-                <div class="comment-input-section" id="disqus-card">
-                    @if(Auth::check() && $userSide)
-                        <!-- User has joined - can comment -->
-                        <form action="{{ route('argument.store', $debate->id) }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="side" value="{{ $userSide }}">
-                            
-                            <div class="input-group">
-                                <img src="{{ Auth::user()->avatar ? asset('storage/'.Auth::user()->avatar) : 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name) }}" 
-                                     alt="{{ Auth::user()->name }}" 
-                                     class="input-avatar">
-                                
-                                <div class="input-wrapper">
-                                    <textarea class="comment-textarea" 
-                                              name="body" 
-                                              id="mainCommentInput"
-                                              placeholder="Share your thoughts on this debate..."
-                                              required></textarea>
-                                    
-                                    <div class="position-buttons-wrapper" id="mainPositionButtons">
-                                        <button type="submit" class="position-btn {{ $userSide == 'pro' ? 'btn-agreed' : 'btn-disagreed' }}">
-                                            @if($userSide == 'pro')
-                                                <i class="fas fa-thumbs-up"></i> Post as AGREED
-                                            @else
-                                                <i class="fas fa-thumbs-down"></i> Post as DISAGREED
-                                            @endif
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    @else
-                        <!-- User needs to join -->
-                        <div class="join-prompt" onclick="window.location='{{ route('debate.join_form', $debate->id) }}'">
-                            <div class="join-prompt-text">
-                                <i class="fas fa-user-plus"></i> Join the discussion
-                            </div>
-                            <p style="font-size: 13px; opacity: 0.9; margin-bottom: 8px;">
-                                Choose your side and start debating
-                            </p>
-                            <button class="join-btn">
-                                <i class="fas fa-sign-in-alt"></i> Join Now
-                            </button>
-                        </div>
-                    @endif
+                {{-- Optional: Add a Visual "Action Bar" below stats just like Facebook --}}
+                <div style="display: flex; border-top: 1px solid var(--border-color); margin: 0 20px; padding: 4px 0;">
+                    <form action="{{ route('debate.join', $debate->id) }}" method="POST" style="flex: 1;">
+                        @csrf <input type="hidden" name="side" value="pro">
+                        <button class="action-btn {{ $userSide == 'pro' ? 'active-blue' : '' }}">
+                            <i class="far fa-thumbs-up"></i> Agreed
+                        </button>
+                    </form>
+                    
+                    <form action="{{ route('debate.join', $debate->id) }}" method="POST" style="flex: 1;">
+                        @csrf <input type="hidden" name="side" value="con">
+                        <button class="action-btn {{ $userSide == 'con' ? 'active-red' : '' }}">
+                            <i class="far fa-thumbs-down"></i> Disagreed
+                        </button>
+                    </form>
+                    
+                    <button class="action-btn" onclick="document.getElementById('mainCommentInput').focus()">
+                        <i class="far fa-comment-alt"></i> Comment
+                    </button>
                 </div>
+
+                {{-- Add this CSS in your <style> section or here --}}
+                <style>
+                    .action-btn {
+                        width: 100%;
+                        background: transparent;
+                        border: none;
+                        padding: 12px;
+                        font-weight: 600;
+                        color: var(--text-secondary);
+                        cursor: pointer;
+                        border-radius: 6px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                        font-size: 14px;
+                        transition: background 0.2s;
+                    }
+                    .action-btn:hover { background: var(--hover-bg); }
+                    .action-btn.active-blue { color: var(--primary-blue); }
+                    .action-btn.active-red { color: var(--primary-red); }
+                </style>
+
+                <!-- Comment Input Section -->
+<div class="comment-input-section" id="disqus-card">
+    @if(Auth::check() && $userSide)
+        <!-- User has joined - can comment -->
+        <form action="{{ route('argument.store', $debate->id) }}" method="POST">
+            @csrf
+            
+            {{-- 
+                IMPORTANT: 
+                I have removed the <input type="hidden" name="side"> line.
+                The buttons below will now pass the 'side' value.
+            --}}
+            
+            <div class="input-group">
+                <img src="{{ Auth::user()->avatar ? asset('storage/'.Auth::user()->avatar) : 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name) }}" 
+                     alt="{{ Auth::user()->name }}" 
+                     class="input-avatar">
+                
+                <div class="input-wrapper">
+                    <textarea class="comment-textarea" 
+                              name="body" 
+                              id="mainCommentInput"
+                              placeholder="Share your thoughts on this debate..."
+                              required></textarea>
+                    
+                    <div class="position-buttons-wrapper" id="mainPositionButtons">
+                        {{-- Button 1: AGREED --}}
+                        <button type="submit" name="side" value="pro" class="position-btn btn-agreed">
+                            <i class="fas fa-thumbs-up"></i> Post as AGREED
+                        </button>
+
+                        {{-- Button 2: DISAGREED --}}
+                        <button type="submit" name="side" value="con" class="position-btn btn-disagreed">
+                            <i class="fas fa-thumbs-down"></i> Post as DISAGREED
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    @else
+        <!-- User needs to join (Existing code...) -->
+        <div class="join-prompt" onclick="window.location='{{ route('debate.join_form', $debate->id) }}'">
+            <div class="join-prompt-text">
+                <i class="fas fa-user-plus"></i> Join the discussion
+            </div>
+            <p style="font-size: 13px; opacity: 0.9; margin-bottom: 8px;">
+                Choose your side and start debating
+            </p>
+            <button class="join-btn">
+                <i class="fas fa-sign-in-alt"></i> Join Now
+            </button>
+        </div>
+    @endif
+</div>
 
                 <!-- Comments Section -->
                 <div class="comments-section">
