@@ -58,53 +58,58 @@ class FrontendController extends Controller
         return view('frontend.auth.debate-join', compact('debate'));
     }
 
-   // app/Http/Controllers/FrontendController.php
+  public function processJoin(Request $request, $debateId) {
+    // ১. এডমিন চেক
+    if (Auth::check() && Auth::user()->role === 'admin') {
+        Auth::logout();
+        return redirect()->route('debate.join_form', $debateId)
+            ->with('error', 'Please join as a regular user (not Admin).');
+    }
 
-public function processJoin(Request $request, $debateId) {
-    // ১. ভ্যালিডেশন
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'side' => 'required|in:pro,con',
-        'avatar' => 'nullable|image|max:2048',
-    ]);
+    $user = Auth::user();
 
-    $user = Auth::user(); // বর্তমান ইউজার (Admin বা অন্য কেউ)
-
-    // ২. যদি ইউজার লগইন না থাকে (Guest), তবে নতুন ইউজার বানাবো
+    // ২. যদি নতুন ইউজার হয় (রেজিস্ট্রেশন)
     if (!$user) {
+        // ভ্যালিডেশন
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:6',
+            'side' => 'required|in:pro,con',
+            'avatar' => 'nullable|image|max:5120',
+        ]);
+
         $avatarPath = null;
         if ($request->hasFile('avatar')) {
             $avatarPath = $request->file('avatar')->store('avatars', 'public');
-        } else {
-            // ডিফল্ট অ্যাভাতার
-            $avatarPath = 'avatars/default.png'; 
         }
 
-        $fakeEmail = Str::slug($request->name) . rand(1000, 9999) . '@debater.com';
-        
+        // ইউজার তৈরি (Create User with provided credentials)
         $user = User::create([
             'name' => $request->name,
-            'email' => $fakeEmail,
-            'password' => Hash::make('password123'),
+            'email' => $request->email, // আসল ইমেইল
+            'password' => Hash::make($request->password), // আসল পাসওয়ার্ড
             'avatar' => $avatarPath,
+            'role' => 'user'
         ]);
 
-        Auth::login($user);
+        // লগইন করানো
+        Auth::login($user, true);
     } else {
-        // ৩. যদি ইউজার অলরেডি লগইন থাকে (যেমন: Admin)
-        // আমরা চাইলে তার নাম বা ছবি আপডেট করতে পারি, অথবা শুধু পার্টিসিপেন্ট টেবিলে যোগ করতে পারি।
-        // এখানে ইউজার যদি নতুন ছবি দেয়, তা আপডেট করে দিচ্ছি:
+        // বিদ্যমান ইউজার হলে শুধু সাইড চেক
+        $request->validate([
+            'side' => 'required|in:pro,con',
+        ]);
+        
+        // ছবি আপডেট (অপশনাল)
         if ($request->hasFile('avatar')) {
-            $avatarPath = $request->file('avatar')->store('avatars', 'public');
-            $user->avatar = $avatarPath;
+            $request->validate(['avatar' => 'nullable|image|max:5120']);
+            $user->avatar = $request->file('avatar')->store('avatars', 'public');
             $user->save();
         }
-        // নাম আপডেট (অপশনাল, যদি চান অ্যাডমিন নাম পাল্টে ফেলুক)
-        // $user->name = $request->name;
-        // $user->save();
     }
 
-    // ৪. ডিবেট পার্টিসিপেন্ট টেবিলে এন্ট্রি (updateOrCreate ব্যবহার করছি যাতে ডুপ্লিকেট না হয়)
+    // ৩. ডিবেটে এন্ট্রি
     DebateParticipant::updateOrCreate(
         [
             'debate_id' => $debateId,
@@ -115,11 +120,8 @@ public function processJoin(Request $request, $debateId) {
         ]
     );
 
-    // ৫. রিডাইরেক্ট এবং স্ক্রল (Anchor Tag ব্যবহার করা হয়েছে)
-    // '#disqus-card' দিলে পেজ লোড হওয়ার পর সরাসরি কমেন্ট বক্সে চলে যাবে
-    return redirect()->to(route('home') . '#disqus-card')->with('success', 'You have joined successfully! Now you can post.');
+    return redirect()->route('home')->with('success', 'Welcome! You have registered and joined successfully.');
 }
-
     public function storeArgument(Request $request, $debateId) {
         if(!Auth::check()) {
             return redirect()->route('debate.join_form', $debateId);

@@ -135,18 +135,27 @@
                             <td class="small text-muted">
                                 {{ $debate->created_at->format('d M Y') }}
                             </td>
-                            <td class="text-end pe-4">
-                                <a href="{{ route('admin.debates.edit', $debate->id) }}" class="btn btn-sm btn-light border text-primary me-1">
-                                    <i class="fa-solid fa-pen"></i>
-                                </a>
-                                <form action="{{ route('admin.debates.destroy', $debate->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this debate?');">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-light border text-danger">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
+                           <td class="text-end pe-4">
+                                    <a href="{{ route('admin.debates.participants', $debate->id) }}" 
+                                    class="btn btn-sm btn-light border text-info me-1" 
+                                    title="View Participants">
+                                        <i class="fa-solid fa-users"></i>
+                                    </a>
+
+                                    <!-- আপনার আগের Edit বাটন -->
+                                    <a href="{{ route('admin.debates.edit', $debate->id) }}" class="btn btn-sm btn-light border text-primary me-1">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    
+                                    <!-- আপনার আগের Delete বাটন -->
+                                    <form action="{{ route('admin.debates.destroy', $debate->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this debate?');">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-sm btn-light border text-danger">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                              </tr>
                         @endforeach
                     </tbody>
                 </table>

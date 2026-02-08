@@ -5,825 +5,554 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $debate ? $debate->title : 'Logically Debate' }}</title>
     <link rel="icon" href="https://i.ibb.co.com/s916M5xG/Logo-01.png" type="image/png">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Google Fonts: Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
+        /* ------------------------------------------------------------------
+           RESET & VARIABLES
+           ------------------------------------------------------------------ */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            outline: none;
         }
 
         :root {
-            --primary-blue: #2563eb;
-            --primary-red: #dc2626;
-            --bg-primary: #f0f2f5;
-            --bg-secondary: #ffffff;
-            --text-primary: #050505;
-            --text-secondary: #65676b;
-            --border-color: #e4e6eb;
-            --hover-bg: #f2f3f5;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
-            --shadow-md: 0 2px 8px rgba(0,0,0,0.1);
-            --shadow-lg: 0 8px 16px rgba(0,0,0,0.12);
+            /* BRAND COLORS (Based on your Image) */
+            --brand-primary: #D32F2F; /* Deep Red */
+            --brand-light: #FFEBEE;
+            --brand-hover: #B71C1C;
+            
+            /* DEBATE SIDES */
+            --side-agreed: #1976D2; /* Blue */
+            --side-agreed-light: #E3F2FD;
+            --side-disagreed: var(--brand-primary); /* Your Brand Red */
+            
+            /* NEUTRALS */
+            --bg-body: #F4F6F8;
+            --bg-card: #FFFFFF;
+            --text-main: #212121;
+            --text-muted: #757575;
+            --border-light: #EEEEEE;
+            --shadow-soft: 0 4px 20px rgba(0,0,0,0.05);
+            --shadow-hover: 0 8px 25px rgba(0,0,0,0.08);
+            
+            /* SPACING */
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 50px;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
             line-height: 1.6;
-            padding-top: 60px;
+            padding-top: 70px; /* Space for fixed navbar */
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Top Navigation Bar */
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+        ul { list-style: none; }
+        button { font-family: inherit; cursor: pointer; }
+
+        /* ------------------------------------------------------------------
+           NAVBAR
+           ------------------------------------------------------------------ */
         .navbar {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
-            padding: 0 20px;
-            height: 60px;
+            height: 70px;
+            background: var(--bg-card);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            padding: 0 4%; /* Increased padding */
             z-index: 1000;
-            box-shadow: var(--shadow-sm);
         }
 
-        .navbar-brand {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary-blue), var(--primary-red));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .logo-wrapper img {
+            height: 40px;
+            width: auto;
         }
 
         .navbar-user {
             display: flex;
             align-items: center;
             gap: 12px;
+            padding: 6px 12px;
+            border-radius: var(--radius-full);
+            transition: background 0.2s;
+            cursor: pointer;
         }
 
-        .user-avatar-nav {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            object-fit: cover;
+        .navbar-user:hover {
+            background-color: var(--bg-body);
         }
 
         .user-name-nav {
-            font-weight: 600;
+            font-weight: 500;
             font-size: 15px;
+            color: var(--text-main);
         }
 
-        /* Main Container */
+        .user-avatar-nav {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border-light);
+        }
+
+        /* Dropdown */
+        .navbar-user-wrapper { position: relative; }
+        .user-dropdown {
+            position: absolute;
+            top: 130%;
+            right: 0;
+            width: 200px;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-hover);
+            padding: 8px;
+            display: none;
+            border: 1px solid var(--border-light);
+            z-index: 1001;
+        }
+        .user-dropdown.active { display: block; animation: slideDown 0.2s ease; }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 8px;
+            color: var(--text-main);
+        }
+        .dropdown-item:hover { background: var(--bg-body); }
+        .logout-item { color: var(--brand-primary); }
+        .logout-item:hover { background: var(--brand-light); }
+
+        /* ------------------------------------------------------------------
+           MAIN LAYOUT (Increased Spacing)
+           ------------------------------------------------------------------ */
         .main-container {
-            max-width: 1400px;
+            max-width: 1600px; /* Wider container */
             margin: 0 auto;
-            padding: 24px 16px;
+            padding: 40px 6%; /* BIGGER side padding as requested */
             display: grid;
-            grid-template-columns: 1fr 680px 1fr;
-            gap: 24px;
+            grid-template-columns: 280px 1fr 300px;
+            gap: 40px; /* Increased gap */
+            align-items: start;
         }
 
-        /* Left Sidebar */
-        .left-sidebar {
-            position: sticky;
-            top: 84px;
-            height: fit-content;
-        }
-
+        /* ------------------------------------------------------------------
+           SIDEBARS
+           ------------------------------------------------------------------ */
         .sidebar-card {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 16px;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 24px;
+            border: 1px solid var(--border-light);
         }
 
         .sidebar-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
-            margin-bottom: 16px;
-            color: var(--text-primary);
+            color: var(--text-main);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-left: 3px solid var(--brand-primary);
+            padding-left: 10px;
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 16px;
         }
 
         .stat-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 16px;
-            border-radius: 10px;
-            color: white;
+            padding: 20px 10px;
+            border-radius: var(--radius-md);
             text-align: center;
-        }
-
-        .stat-box.blue {
-            background: linear-gradient(135deg, var(--primary-blue), #3b82f6);
-        }
-
-        .stat-box.red {
-            background: linear-gradient(135deg, var(--primary-red), #ef4444);
-        }
-
-        .stat-number {
-            font-size: 28px;
-            font-weight: 800;
-            display: block;
-        }
-
-        .stat-label {
-            font-size: 13px;
-            opacity: 0.95;
-            margin-top: 4px;
-        }
-
-        /* Center Feed */
-        .center-feed {
-            max-width: 680px;
-        }
-
-        /* Post Card */
-        .post-card {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 20px;
-            overflow: hidden;
-            transition: box-shadow 0.3s;
-        }
-
-        .post-card:hover {
-            box-shadow: var(--shadow-md);
-        }
-
-        .post-header {
-            padding: 16px 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .post-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            object-fit: cover;
-            flex-shrink: 0;
-            border: 2px solid var(--border-color);
-        }
-
-        .post-author-info {
-            flex: 1;
-        }
-
-        .author-name {
-            font-weight: 700;
-            font-size: 16px;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-        }
-
-        .post-time {
-            font-size: 13px;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .post-content {
-            padding: 0 20px 16px 20px;
-        }
-
-        .post-title {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-bottom: 12px;
-            line-height: 1.3;
-        }
-
-        .post-description {
-            font-size: 15px;
-            color: var(--text-secondary);
-            line-height: 1.7;
-        }
-
-        .post-stats {
-            padding: 14px 20px;
-            border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 15px;
-            color: var(--text-secondary);
-        }
-
-        .reactions-summary {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .reaction-icons {
-            display: flex;
-            align-items: center;
-        }
-
-        .reaction-bubble {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            border: 2px solid var(--bg-secondary);
-            margin-left: -6px;
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-        }
-
-        .reaction-bubble:first-child {
-            margin-left: 0;
-        }
-
-        .bubble-agreed {
-            background: var(--primary-blue);
-            color: white;
-        }
-
-        .bubble-disagreed {
-            background: var(--primary-red);
-            color: white;
-        }
-
-        /* Comment Input */
-        .comment-input-section {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .input-group {
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-        }
-
-        .input-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-
-        .input-wrapper {
-            flex: 1;
-        }
-
-        .comment-textarea {
-            width: 100%;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 10px 16px;
-            font-size: 15px;
-            font-family: inherit;
-            resize: none;
-            outline: none;
-            min-height: 40px;
-            max-height: 120px;
-            transition: all 0.2s;
-        }
-
-        .comment-textarea:focus {
-            background: var(--bg-secondary);
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        .position-buttons-wrapper {
-            margin-top: 12px;
-            display: none;
-            gap: 10px;
-        }
-
-        .position-buttons-wrapper.active {
-            display: flex;
-        }
-
-        .position-btn {
-            flex: 1;
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-agreed {
-            background: var(--primary-blue);
-            color: white;
-        }
-
-        .btn-agreed:hover {
-            background: #1d4ed8;
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn-disagreed {
-            background: var(--primary-red);
-            color: white;
-        }
-
-        .btn-disagreed:hover {
-            background: #b91c1c;
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .join-prompt {
-            text-align: center;
-            padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 12px;
-            cursor: pointer;
             transition: transform 0.2s;
         }
+        .stat-box:hover { transform: translateY(-3px); }
 
-        .join-prompt:hover {
-            transform: scale(1.02);
-        }
+        .stat-box.blue { background: linear-gradient(135deg, #42A5F5, #1976D2); color: white; }
+        .stat-box.red { background: linear-gradient(135deg, #EF5350, #C62828); color: white; }
+        
+        /* Neutral Stats */
+        .stat-box.neutral-1 { background: var(--bg-body); border: 1px solid var(--border-light); }
+        .stat-box.neutral-2 { background: var(--bg-body); border: 1px solid var(--border-light); }
 
-        .join-prompt-text {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
+        .stat-number { font-size: 24px; font-weight: 900; display: block; }
+        .stat-label { font-size: 12px; font-weight: 500; margin-top: 5px; opacity: 0.9; }
 
-        .join-btn {
-            background: white;
-            color: #667eea;
-            padding: 10px 24px;
-            border-radius: 8px;
-            border: none;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 8px;
-            font-size: 15px;
-        }
-
-        /* Comments Section */
-        .comments-section {
-            padding: 20px;
-        }
-
-        .comments-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .comments-count {
-            font-weight: 700;
-            font-size: 18px;
-            color: var(--text-primary);
-        }
-
-        .filter-tabs {
-            display: flex;
-            gap: 16px;
-            font-size: 14px;
-        }
-
-        .filter-tab {
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .filter-tab:hover {
-            background: var(--hover-bg);
-        }
-
-        .filter-tab.active {
-            color: var(--primary-blue);
-            background: rgba(37, 99, 235, 0.1);
-        }
-
-        /* Comment Item */
-        .comment-thread {
-            margin-bottom: 16px;
-        }
-
-        .comment-wrapper {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-
-        .comment-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-
-        .comment-content-wrapper {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .comment-bubble {
-            background: var(--bg-primary);
-            border-radius: 18px;
-            padding: 10px 14px;
-            display: inline-block;
-            max-width: 100%;
-            word-wrap: break-word;
-        }
-
-        .comment-author {
-            font-weight: 700;
-            font-size: 14px;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .side-badge {
-            font-size: 10px;
-            font-weight: 800;
-            padding: 3px 8px;
-            border-radius: 5px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-agreed {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .badge-disagreed {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .comment-text {
-            font-size: 15px;
-            color: var(--text-primary);
-            line-height: 1.5;
-        }
-
-        .comment-meta {
-            display: flex;
-            gap: 16px;
-            margin-top: 4px;
-            font-size: 13px;
-            color: var(--text-secondary);
-            font-weight: 600;
-            padding-left: 14px;
-        }
-
-        .comment-action {
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .comment-action:hover {
-            color: var(--text-primary);
-            text-decoration: underline;
-        }
-
-        .comment-time {
-            color: var(--text-secondary);
-        }
-
-        /* Nested Replies */
-        .replies-container {
-            margin-left: 46px;
-            margin-top: 8px;
-            padding-left: 16px;
-            border-left: 2px solid var(--border-color);
-        }
-
-        .reply-wrapper {
-            margin-bottom: 8px;
-        }
-
-        .collapse-toggle {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-left: 46px;
-            margin-top: 8px;
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 6px;
-            width: fit-content;
-            transition: background 0.2s;
-        }
-
-        .collapse-toggle:hover {
-            background: var(--hover-bg);
-        }
-
-        .collapse-toggle i {
-            font-size: 11px;
-            transition: transform 0.3s;
-        }
-
-        .collapse-toggle.collapsed i {
-            transform: rotate(-90deg);
-        }
-
-        /* Reply Input */
-        .reply-input-container {
-            margin-left: 46px;
-            margin-top: 8px;
-            display: none;
-        }
-
-        .reply-input-container.active {
-            display: flex;
-            gap: 10px;
-            align-items: flex-start;
-        }
-
-        .reply-textarea {
-            flex: 1;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 18px;
-            padding: 8px 14px;
-            font-size: 14px;
-            font-family: inherit;
-            resize: none;
-            outline: none;
-            min-height: 36px;
-            transition: all 0.2s;
-        }
-
-        .reply-textarea:focus {
-            background: var(--bg-secondary);
-            border-color: var(--primary-blue);
-        }
-
-        .reply-action-buttons {
-            display: none;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .reply-action-buttons.active {
-            display: flex;
-        }
-
-        .reply-btn {
-            padding: 6px 16px;
-            border-radius: 6px;
-            border: none;
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* Right Sidebar */
-        .right-sidebar {
-            position: sticky;
-            top: 84px;
-            height: fit-content;
-        }
-
-        .participants-list {
-            margin-top: 16px;
-        }
-
+        /* Participant List */
         .participant-item {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             padding: 10px;
             border-radius: 8px;
             margin-bottom: 8px;
             transition: background 0.2s;
+            border-bottom: 1px solid transparent;
+        }
+        .participant-item:hover { background: var(--bg-body); }
+        .participant-avatar { width: 36px; height: 36px; border-radius: 50%; }
+        .participant-name { font-weight: 500; font-size: 14px; color: var(--text-main); }
+        .participant-side { font-size: 11px; font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+
+        /* ------------------------------------------------------------------
+           CENTER FEED & POST CARD
+           ------------------------------------------------------------------ */
+        .post-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 30px;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
         }
 
-        .participant-item:hover {
-            background: var(--hover-bg);
+        .post-header {
+            padding: 24px 30px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
 
-        .participant-avatar {
-            width: 32px;
-            height: 32px;
+        .post-avatar {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            object-fit: cover;
+            border: 2px solid var(--brand-light);
         }
 
-        .participant-info {
-            flex: 1;
+        .author-name { font-weight: 700; font-size: 16px; color: var(--text-main); }
+        .post-time { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        .post-content { padding: 0 30px 20px 30px; }
+        
+        .post-title {
+            font-size: 28px;
+            font-weight: 900; /* Bolder font */
+            color: var(--text-main);
+            margin-bottom: 16px;
+            line-height: 1.3;
         }
 
-        .participant-name {
-            font-weight: 600;
+        .post-description {
+            font-size: 16px;
+            color: #424242;
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        /* Reactions Area */
+        .post-stats {
+            padding: 16px 30px;
+            background: #FAFAFA;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reaction-btn {
+            background: none;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+        .reaction-btn:hover { background: rgba(0,0,0,0.05); }
+
+        .bubble-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 14px;
+            color: white;
         }
+        
+        .bg-agreed { background: var(--side-agreed); }
+        .bg-disagreed { background: var(--brand-primary); }
+        
+        .reaction-text { font-weight: 600; font-size: 14px; }
+        .text-agreed { color: var(--side-agreed); }
+        .text-disagreed { color: var(--brand-primary); }
 
-        .participant-side {
-            font-size: 12px;
-            color: var(--text-secondary);
+        /* Action Buttons Row */
+        .action-row {
+            display: flex;
+            padding: 10px 20px;
+            gap: 10px;
         }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-secondary);
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            margin-bottom: 16px;
-            opacity: 0.3;
-        }
-
-        .empty-state-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .empty-state-text {
+        
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            font-weight: 500;
+            color: var(--text-muted);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             font-size: 15px;
+            transition: 0.2s;
+        }
+        .action-btn:hover { background: var(--bg-body); color: var(--text-main); }
+        .action-btn.active-blue { background: var(--side-agreed-light); color: var(--side-agreed); font-weight: 700; }
+        .action-btn.active-red { background: var(--brand-light); color: var(--brand-primary); font-weight: 700; }
+
+        /* ------------------------------------------------------------------
+           INPUT SECTION
+           ------------------------------------------------------------------ */
+        .comment-input-section { padding: 24px 30px; }
+
+        .comment-textarea {
+            width: 100%;
+            background: var(--bg-body);
+            border: 1px solid transparent;
+            border-radius: 20px;
+            padding: 14px 20px;
+            font-size: 15px;
+            resize: none;
+            min-height: 50px;
+            transition: all 0.3s;
+            font-family: 'Roboto', sans-serif;
+        }
+        
+        .comment-textarea:focus {
+            background: var(--bg-card);
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 4px var(--brand-light);
         }
 
-        /* Utilities */
-        .hidden {
-            display: none !important;
+        .position-buttons-wrapper {
+            margin-top: 16px;
+            display: none;
+            gap: 16px;
+            animation: fadeIn 0.3s;
         }
+        .position-buttons-wrapper.active { display: flex; }
 
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .comment-thread {
-            animation: fadeInUp 0.4s ease;
-        }
-
-        /* Alert Messages */
-        .alert {
-            padding: 14px 18px;
-            border-radius: 10px;
-            margin-bottom: 16px;
-            font-weight: 600;
+        .position-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 700;
+            color: white;
             font-size: 14px;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
+        .btn-agreed { background: var(--side-agreed); }
+        .btn-agreed:hover { background: #1565C0; }
+        
+        .btn-disagreed { background: var(--brand-primary); }
+        .btn-disagreed:hover { background: var(--brand-hover); }
+
+        /* Join Prompt */
+        .join-prompt {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, var(--brand-primary) 0%, #E57373 100%);
+            border-radius: var(--radius-md);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3);
+        }
+        .join-btn {
+            background: white;
+            color: var(--brand-primary);
+            padding: 10px 28px;
+            border-radius: 50px;
+            border: none;
+            font-weight: 700;
+            margin-top: 12px;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1px;
         }
 
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
+        /* ------------------------------------------------------------------
+           COMMENTS
+           ------------------------------------------------------------------ */
+        .comments-section { padding: 0 30px 30px 30px; }
+        
+        .comments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .comments-count { font-weight: 700; font-size: 18px; color: var(--text-main); }
+        
+        .filter-tab {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+        .filter-tab.active { background: var(--bg-body); color: var(--text-main); }
+
+        /* Comment Item */
+        .comment-wrapper { display: flex; gap: 14px; margin-bottom: 12px; }
+        .comment-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        
+        .comment-bubble {
+            background: var(--bg-body);
+            border-radius: 0 16px 16px 16px; /* Unique shape */
+            padding: 12px 18px;
+            display: inline-block;
+            max-width: 100%;
         }
 
-        .alert i {
-            font-size: 18px;
+        .badge-agreed { 
+            font-size: 10px; font-weight: 800; padding: 2px 8px; 
+            border-radius: 4px; text-transform: uppercase;
+            background: var(--side-agreed-light); color: var(--side-agreed);
+            margin-left: 8px;
+        }
+        .badge-disagreed {
+            font-size: 10px; font-weight: 800; padding: 2px 8px; 
+            border-radius: 4px; text-transform: uppercase;
+            background: var(--brand-light); color: var(--brand-primary);
+            margin-left: 8px;
         }
 
-        /* Responsive Design */
-        @media (max-width: 1200px) {
+        .comment-author { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+        .comment-text { font-size: 15px; color: #333; }
+        
+        .comment-meta {
+            margin-left: 54px;
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        /* Nested Replies */
+        .replies-container {
+            margin-left: 54px;
+            margin-top: 10px;
+            padding-left: 16px;
+            border-left: 2px solid var(--border-light);
+        }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .alert {
+            padding: 16px; border-radius: 8px; margin-bottom: 20px;
+            font-weight: 500; display: flex; align-items: center; gap: 10px;
+        }
+        .alert-success { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+        .alert-error { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ------------------------------------------------------------------
+           RESPONSIVE DESIGN
+           ------------------------------------------------------------------ */
+        @media (max-width: 1280px) {
+            .main-container {
+                padding: 30px 3%; /* Adjust side padding */
+                grid-template-columns: 260px 1fr;
+            }
+            .right-sidebar { display: none; }
+        }
+
+        @media (max-width: 992px) {
             .main-container {
                 grid-template-columns: 1fr;
-                max-width: 680px;
+                max-width: 800px;
             }
-
-            .left-sidebar,
-            .right-sidebar {
-                display: none;
-            }
+            .left-sidebar { display: none; }
+            .post-title { font-size: 24px; }
         }
 
-        @media (max-width: 768px) {
-            .main-container {
-                padding: 12px 8px;
-            }
-
-            .post-card,
-            .comments-section {
-                border-radius: 0;
-            }
-
-            .post-title {
-                font-size: 20px;
-            }
-
-            .navbar-brand {
-                font-size: 20px;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .replies-container {
-                margin-left: 20px;
-                padding-left: 12px;
-            }
-
-            .collapse-toggle,
-            .reply-input-container {
-                margin-left: 20px;
-            }
+        @media (max-width: 600px) {
+            .main-container { padding: 20px 16px; }
+            .post-header, .post-content, .post-stats, .comments-section { padding-left: 20px; padding-right: 20px; }
+            .position-buttons-wrapper { flex-direction: column; gap: 10px; }
+            .comment-meta { margin-left: 0; margin-top: 8px; }
+            .replies-container { margin-left: 20px; }
         }
     </style>
 </head>
 <body>
 
-<!-- Top Navbar -->
+<!-- Navbar -->
 <nav class="navbar">
-    <div class="sidebar-brand">
-        <!-- Logo -->
+    <div class="logo-wrapper">
         <a href="{{ route('home') }}">
+            <!-- Assuming logo handles brand color or is an image -->
             <img src="https://i.ibb.co.com/gbLB6Dqj/Logo-02.png" alt="Logically Debate">
         </a>
     </div>
-    <style>
-        .sidebar-brand {
-            height: var(--header-height);
-            display: flex;
-            align-items: center;
-            padding: 0 25px;
-        }
-        
-        .sidebar-brand img {
-            max-height: 28px;
-            width: auto;
-        }
-         @media (max-width: 991.98px) {
-            .sidebar-brand {
-                justify-content: center;
-            }
-        }
-    </style>
+
     @auth
-        <div class="navbar-user">
-            <span class="user-name-nav">{{ Auth::user()->name }}</span>
-            <img src="{{ Auth::user()->avatar ? asset('storage/'.Auth::user()->avatar) : 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name) }}" 
-                 alt="{{ Auth::user()->name }}" 
-                 class="user-avatar-nav">
+        <div class="navbar-user-wrapper" onclick="toggleUserDropdown()">
+            <div class="navbar-user">
+                <span class="user-name-nav">{{ Auth::user()->name }}</span>
+                <img src="{{ Auth::user()->avatar ? asset('storage/'.Auth::user()->avatar) : 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name) }}" 
+                     alt="{{ Auth::user()->name }}" 
+                     class="user-avatar-nav">
+                <i class="fas fa-chevron-down" style="font-size: 10px; color: var(--text-muted); margin-left: 8px;"></i>
+            </div>
+
+            <div class="user-dropdown" id="userDropdown">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="dropdown-item logout-item">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </form>
+            </div>
         </div>
     @else
         <div class="navbar-user">
@@ -835,11 +564,11 @@
 <!-- Main Container -->
 <div class="main-container">
     
-    <!-- Left Sidebar -->
+    <!-- LEFT SIDEBAR -->
     <aside class="left-sidebar">
         @if($debate)
         <div class="sidebar-card">
-            <div class="sidebar-title">Debate Statistics</div>
+            <div class="sidebar-title">Statistics</div>
             <div class="stats-grid">
                 <div class="stat-box blue">
                     <span class="stat-number">{{ $debate->participants->where('side', 'pro')->count() }}</span>
@@ -853,212 +582,155 @@
         </div>
 
         <div class="sidebar-card">
-            <div class="sidebar-title">Total Engagement</div>
+            <div class="sidebar-title">Engagement</div>
             <div class="stats-grid">
-                <div class="stat-box" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                    <span class="stat-number">{{ $debate->participants->count() }}</span>
-                    <span class="stat-label">Participants</span>
+                <div class="stat-box neutral-1">
+                    <span class="stat-number" style="color: var(--brand-primary)">{{ $debate->participants->count() }}</span>
+                    <span class="stat-label">People</span>
                 </div>
-                <div class="stat-box" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                    <span class="stat-number">{{ $debate->arguments->count() }}</span>
-                    <span class="stat-label">Comments</span>
+                <div class="stat-box neutral-2">
+                    <span class="stat-number" style="color: var(--text-main)">{{ $debate->arguments->count() }}</span>
+                    <span class="stat-label">Arguments</span>
                 </div>
             </div>
         </div>
         @endif
     </aside>
 
-    <!-- Center Feed -->
+    <!-- CENTER FEED -->
     <main class="center-feed">
         
-        <!-- Alert Messages -->
         @if(session('success'))
             <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i>
-                {{ session('success') }}
+                <i class="fas fa-check-circle"></i> {{ session('success') }}
             </div>
         @endif
 
         @if(session('error'))
             <div class="alert alert-error">
-                <i class="fas fa-exclamation-circle"></i>
-                {{ session('error') }}
+                <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
             </div>
         @endif
 
         @if($debate)
-            <!-- Main Post -->
             <article class="post-card">
+                <!-- Post Header -->
                 <div class="post-header">
-                    <img src="https://ui-avatars.com/api/?name=Debate+Host&background=667eea&color=fff" 
+                    <img src="https://ui-avatars.com/api/?name=Debate+Host&background=D32F2F&color=fff" 
                          alt="Debate Host" 
                          class="post-avatar">
                     <div class="post-author-info">
                         <div class="author-name">Debate Host</div>
                         <div class="post-time">
                             <span>{{ $debate->created_at->diffForHumans() }}</span>
-                            <span>·</span>
+                            <span style="margin: 0 4px;">·</span>
                             <i class="fas fa-globe-americas"></i>
                         </div>
                     </div>
-                    <button style="background: transparent; border: none; cursor: pointer; padding: 8px; color: var(--text-secondary); font-size: 18px;">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
                 </div>
 
+                <!-- Post Content -->
                 <div class="post-content">
                     <h1 class="post-title">{{ $debate->title }}</h1>
                     <p class="post-description">{{ $debate->description }}</p>
                 </div>
 
-               {{-- এই অংশটি রিপ্লেস করুন (Replace this section) --}}
+                <!-- Stats Bar -->
                 <div class="post-stats">
-                    <div class="reactions-summary">
-                        {{-- AGREED BUTTON FORM --}}
-                        <form action="{{ route('debate.join', $debate->id) }}" method="POST" style="display: inline;">
-                            @csrf
-                            <input type="hidden" name="side" value="pro">
-                            <button type="submit" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0;">
-                                <div class="reaction-bubble bubble-agreed" style="transition: transform 0.2s;">
-                                    <i class="fas fa-thumbs-up"></i>
-                                </div>
-                                <span style="font-weight: 600; color: {{ $userSide == 'pro' ? 'var(--primary-blue)' : 'var(--text-secondary)' }}">
-                                    {{ $debate->participants->where('side', 'pro')->count() }} Agreed
+                    <div style="display: flex; gap: 15px;">
+                        {{-- AGREED --}}
+                        <form action="{{ route('debate.join', $debate->id) }}" method="POST">
+                            @csrf <input type="hidden" name="side" value="pro">
+                            <button type="submit" class="reaction-btn">
+                                <div class="bubble-icon bg-agreed"><i class="fas fa-thumbs-up"></i></div>
+                                <span class="reaction-text text-agreed">
+                                    {{ $debate->participants->where('side', 'pro')->count() }}
                                 </span>
                             </button>
                         </form>
                         
-                        <span style="margin: 0 8px;">·</span>
-
-                        {{-- DISAGREED BUTTON FORM --}}
-                        <form action="{{ route('debate.join', $debate->id) }}" method="POST" style="display: inline;">
-                            @csrf
-                            <input type="hidden" name="side" value="con">
-                            <button type="submit" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0;">
-                                <div class="reaction-bubble bubble-disagreed" style="transition: transform 0.2s;">
-                                    <i class="fas fa-thumbs-down"></i>
-                                </div>
-                                <span style="font-weight: 600; color: {{ $userSide == 'con' ? 'var(--primary-red)' : 'var(--text-secondary)' }}">
-                                    {{ $debate->participants->where('side', 'con')->count() }} Disagreed
+                        {{-- DISAGREED --}}
+                        <form action="{{ route('debate.join', $debate->id) }}" method="POST">
+                            @csrf <input type="hidden" name="side" value="con">
+                            <button type="submit" class="reaction-btn">
+                                <div class="bubble-icon bg-disagreed"><i class="fas fa-thumbs-down"></i></div>
+                                <span class="reaction-text text-disagreed">
+                                    {{ $debate->participants->where('side', 'con')->count() }}
                                 </span>
                             </button>
                         </form>
                     </div>
-
-                    {{-- Comment Count Display --}}
-                    <div>
-                        <span>{{ $debate->arguments->count() }} Comments</span>
+                    <div style="color: var(--text-muted); font-size: 14px; font-weight: 500;">
+                        {{ $debate->arguments->count() }} Comments
                     </div>
                 </div>
 
-                {{-- Optional: Add a Visual "Action Bar" below stats just like Facebook --}}
-                <div style="display: flex; border-top: 1px solid var(--border-color); margin: 0 20px; padding: 4px 0;">
+                <!-- Action Buttons -->
+                <div class="action-row">
                     <form action="{{ route('debate.join', $debate->id) }}" method="POST" style="flex: 1;">
                         @csrf <input type="hidden" name="side" value="pro">
                         <button class="action-btn {{ $userSide == 'pro' ? 'active-blue' : '' }}">
-                            <i class="far fa-thumbs-up"></i> Agreed
+                            <i class="{{ $userSide == 'pro' ? 'fas' : 'far' }} fa-thumbs-up"></i> Agreed
                         </button>
                     </form>
                     
                     <form action="{{ route('debate.join', $debate->id) }}" method="POST" style="flex: 1;">
                         @csrf <input type="hidden" name="side" value="con">
                         <button class="action-btn {{ $userSide == 'con' ? 'active-red' : '' }}">
-                            <i class="far fa-thumbs-down"></i> Disagreed
+                            <i class="{{ $userSide == 'con' ? 'fas' : 'far' }} fa-thumbs-down"></i> Disagreed
                         </button>
                     </form>
                     
                     <button class="action-btn" onclick="document.getElementById('mainCommentInput').focus()">
-                        <i class="far fa-comment-alt"></i> Comment
+                        <i class="far fa-comment-alt"></i> Debate
                     </button>
                 </div>
 
-                {{-- Add this CSS in your <style> section or here --}}
-                <style>
-                    .action-btn {
-                        width: 100%;
-                        background: transparent;
-                        border: none;
-                        padding: 12px;
-                        font-weight: 600;
-                        color: var(--text-secondary);
-                        cursor: pointer;
-                        border-radius: 6px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        gap: 8px;
-                        font-size: 14px;
-                        transition: background 0.2s;
-                    }
-                    .action-btn:hover { background: var(--hover-bg); }
-                    .action-btn.active-blue { color: var(--primary-blue); }
-                    .action-btn.active-red { color: var(--primary-red); }
-                </style>
-
-                <!-- Comment Input Section -->
-<div class="comment-input-section" id="disqus-card">
-    @if(Auth::check() && $userSide)
-        <!-- User has joined - can comment -->
-        <form action="{{ route('argument.store', $debate->id) }}" method="POST">
-            @csrf
-            
-            {{-- 
-                IMPORTANT: 
-                I have removed the <input type="hidden" name="side"> line.
-                The buttons below will now pass the 'side' value.
-            --}}
-            
-            <div class="input-group">
-                <img src="{{ Auth::user()->avatar ? asset('storage/'.Auth::user()->avatar) : 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name) }}" 
-                     alt="{{ Auth::user()->name }}" 
-                     class="input-avatar">
-                
-                <div class="input-wrapper">
-                    <textarea class="comment-textarea" 
-                              name="body" 
-                              id="mainCommentInput"
-                              placeholder="Share your thoughts on this debate..."
-                              required></textarea>
-                    
-                    <div class="position-buttons-wrapper" id="mainPositionButtons">
-                        {{-- Button 1: AGREED --}}
-                        <button type="submit" name="side" value="pro" class="position-btn btn-agreed">
-                            <i class="fas fa-thumbs-up"></i> Post as AGREED
-                        </button>
-
-                        {{-- Button 2: DISAGREED --}}
-                        <button type="submit" name="side" value="con" class="position-btn btn-disagreed">
-                            <i class="fas fa-thumbs-down"></i> Post as DISAGREED
-                        </button>
-                    </div>
+                <!-- Input Section -->
+                <div class="comment-input-section" id="disqus-card">
+                    @if(Auth::check() && $userSide)
+                        <form action="{{ route('argument.store', $debate->id) }}" method="POST">
+                            @csrf
+                            <div style="display: flex; gap: 12px;">
+                                <img src="{{ Auth::user()->avatar ? asset('storage/'.Auth::user()->avatar) : 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name) }}" 
+                                     class="post-avatar" style="width: 40px; height: 40px; border: none;">
+                                
+                                <div style="flex: 1;">
+                                    <textarea class="comment-textarea" 
+                                              name="body" 
+                                              id="mainCommentInput"
+                                              placeholder="Write your argument..."
+                                              required></textarea>
+                                    
+                                    <div class="position-buttons-wrapper" id="mainPositionButtons">
+                                        <button type="submit" name="side" value="pro" class="position-btn btn-agreed">
+                                            <i class="fas fa-check"></i> Post as AGREED
+                                        </button>
+                                        <button type="submit" name="side" value="con" class="position-btn btn-disagreed">
+                                            <i class="fas fa-times"></i> Post as DISAGREED
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    @else
+                        <div class="join-prompt" onclick="window.location='{{ route('debate.join_form', $debate->id) }}'">
+                            <div style="font-size: 18px; font-weight: 700; margin-bottom: 6px;">
+                                <i class="fas fa-lock"></i> Join the Debate
+                            </div>
+                            <p style="font-size: 14px; opacity: 0.9;">Choose a side to participate</p>
+                            <button class="join-btn">Pick a Side</button>
+                        </div>
+                    @endif
                 </div>
-            </div>
-        </form>
-    @else
-        <!-- User needs to join (Existing code...) -->
-        <div class="join-prompt" onclick="window.location='{{ route('debate.join_form', $debate->id) }}'">
-            <div class="join-prompt-text">
-                <i class="fas fa-user-plus"></i> Join the discussion
-            </div>
-            <p style="font-size: 13px; opacity: 0.9; margin-bottom: 8px;">
-                Choose your side and start debating
-            </p>
-            <button class="join-btn">
-                <i class="fas fa-sign-in-alt"></i> Join Now
-            </button>
-        </div>
-    @endif
-</div>
 
-                <!-- Comments Section -->
+                <!-- Comments List -->
                 <div class="comments-section">
                     <div class="comments-header">
-                        <div class="comments-count">
-                            All Comments ({{ $roots->count() }})
-                        </div>
-                        <div class="filter-tabs">
-                            <div class="filter-tab active">Most Relevant</div>
-                            <div class="filter-tab">Newest</div>
+                        <div class="comments-count">Arguments</div>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="filter-tab active">Relevant</div>
+                            <div class="filter-tab">Latest</div>
                         </div>
                     </div>
 
@@ -1067,47 +739,38 @@
                             @include('frontend.partials.comment_tree', ['argument' => $argument, 'debate' => $debate, 'userSide' => $userSide])
                         @endforeach
                     @else
-                        <div class="empty-state">
-                            <i class="fas fa-comments"></i>
-                            <div class="empty-state-title">No comments yet</div>
-                            <div class="empty-state-text">Be the first to share your thoughts!</div>
+                        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <i class="fas fa-comments" style="font-size: 48px; opacity: 0.2; margin-bottom: 15px;"></i>
+                            <p>No arguments yet. Start the debate!</p>
                         </div>
                     @endif
                 </div>
             </article>
         @else
-            <!-- No Active Debate -->
             <div class="post-card">
-                <div class="empty-state" style="padding: 100px 20px;">
-                    <i class="fas fa-inbox"></i>
-                    <div class="empty-state-title">No Active Debate</div>
-                    <div class="empty-state-text">Check back soon for new debates!</div>
+                <div style="text-align: center; padding: 60px;">
+                    <h3>No Active Debate</h3>
                 </div>
             </div>
         @endif
     </main>
 
-    <!-- Right Sidebar -->
+    <!-- RIGHT SIDEBAR -->
     <aside class="right-sidebar">
         @if($debate)
         <div class="sidebar-card">
             <div class="sidebar-title">
-                <i class="fas fa-users"></i> Participants ({{ $debate->participants->count() }})
+                <i class="fas fa-users" style="margin-right: 8px;"></i> Participants
             </div>
-            <div class="participants-list">
-                @foreach($debate->participants->take(10) as $participant)
+            <div>
+                @foreach($debate->participants->take(8) as $participant)
                     <div class="participant-item">
                         <img src="{{ $participant->user->avatar ? asset('storage/'.$participant->user->avatar) : 'https://ui-avatars.com/api/?name='.urlencode($participant->user->name) }}" 
-                             alt="{{ $participant->user->name }}" 
                              class="participant-avatar">
-                        <div class="participant-info">
+                        <div style="flex: 1;">
                             <div class="participant-name">{{ $participant->user->name }}</div>
-                            <div class="participant-side">
-                                @if($participant->side == 'pro')
-                                    <i class="fas fa-thumbs-up" style="color: var(--primary-blue);"></i> Agreed
-                                @else
-                                    <i class="fas fa-thumbs-down" style="color: var(--primary-red);"></i> Disagreed
-                                @endif
+                            <div class="participant-side" style="color: {{ $participant->side == 'pro' ? 'var(--side-agreed)' : 'var(--brand-primary)' }}">
+                                {{ $participant->side == 'pro' ? 'AGREED' : 'DISAGREED' }}
                             </div>
                         </div>
                     </div>
@@ -1120,7 +783,7 @@
 </div>
 
 <script>
-    // Main comment input auto-expand
+    // JS Logic for Interactivity
     const mainInput = document.getElementById('mainCommentInput');
     const mainButtons = document.getElementById('mainPositionButtons');
 
@@ -1128,7 +791,6 @@
         mainInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = this.scrollHeight + 'px';
-            
             if (this.value.trim().length > 0) {
                 mainButtons.classList.add('active');
             } else {
@@ -1137,72 +799,25 @@
         });
     }
 
-    // Toggle reply input
-    function toggleReplyInput(argumentId) {
-        const replyContainer = document.getElementById(`replyInput-${argumentId}`);
-        const allReplyContainers = document.querySelectorAll('.reply-input-container');
-        
-        // Close all other reply inputs
-        allReplyContainers.forEach(container => {
-            if (container.id !== `replyInput-${argumentId}`) {
-                container.classList.remove('active');
-            }
-        });
-
-        // Toggle current
-        replyContainer.classList.toggle('active');
-        
-        if (replyContainer.classList.contains('active')) {
-            const textarea = document.getElementById(`replyTextarea-${argumentId}`);
-            if (textarea) textarea.focus();
-        }
+    function toggleUserDropdown() {
+        document.getElementById('userDropdown').classList.toggle('active');
     }
 
-    // Reply textarea auto-expand and show buttons
-    document.addEventListener('input', function(e) {
-        if (e.target.classList.contains('reply-textarea')) {
-            e.target.style.height = 'auto';
-            e.target.style.height = e.target.scrollHeight + 'px';
-            
-            const id = e.target.id.replace('replyTextarea-', '');
-            const buttons = document.getElementById(`replyButtons-${id}`);
-            
-            if (buttons) {
-                if (e.target.value.trim().length > 0) {
-                    buttons.classList.add('active');
-                } else {
-                    buttons.classList.remove('active');
-                }
-            }
-        }
-    });
-
-    // Toggle nested replies
-    function toggleReplies(argumentId) {
-        const repliesContainer = document.getElementById(`replies-${argumentId}`);
-        const toggleBtn = event.currentTarget;
-        const icon = toggleBtn.querySelector('i');
-        const text = toggleBtn.querySelector('span');
-        
-        if (repliesContainer) {
-            repliesContainer.classList.toggle('hidden');
-            toggleBtn.classList.toggle('collapsed');
-            
-            if (repliesContainer.classList.contains('hidden')) {
-                const replyCount = repliesContainer.querySelectorAll('.reply-wrapper').length;
-                text.textContent = `Show ${replyCount} ${replyCount === 1 ? 'Reply' : 'Replies'}`;
-            } else {
-                text.textContent = 'Hide Replies';
+    window.onclick = function(event) {
+        if (!event.target.closest('.navbar-user-wrapper')) {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown && dropdown.classList.contains('active')) {
+                dropdown.classList.remove('active');
             }
         }
     }
 
-    // Auto-scroll to comment section if hash present
-    window.addEventListener('load', function() {
-        if (window.location.hash === '#disqus-card') {
-            document.getElementById('disqus-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    });
+    // Reuse existing toggle functions for replies if defined in partials
+    function toggleReplyInput(id) {
+        document.querySelectorAll('.reply-input-container').forEach(el => el.classList.remove('active'));
+        const target = document.getElementById('replyInput-' + id);
+        if(target) target.classList.add('active');
+    }
 </script>
 
 </body>

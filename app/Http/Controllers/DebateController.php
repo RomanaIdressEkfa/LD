@@ -138,4 +138,13 @@ public function show($id) {
 
         return redirect()->back();
     }
+      public function participants($id) {
+        $debate = Debate::with(['participants.user'])->findOrFail($id);
+
+        // Agreed এবং Disagreed আলাদা করা
+        $agreed = $debate->participants->where('side', 'pro');
+        $disagreed = $debate->participants->where('side', 'con');
+
+        return view('admin.debates.participants', compact('debate', 'agreed', 'disagreed'));
+    }
 }

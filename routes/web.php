@@ -27,6 +27,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/users', [AdminController::class, 'users'])->name('users.index');
     Route::resource('debates', DebateController::class);
+    Route::get('/debates/{id}/participants', [DebateController::class, 'participants'])->name('debates.participants');
 });
 
 // --- PROFILE ROUTES ---
