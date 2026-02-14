@@ -175,14 +175,11 @@
            ------------------------------------------------------------------ */
         .main-container {
             max-width: 1600px;
-            /* Wider container */
             margin: 0 auto;
             padding: 40px 6%;
-            /* BIGGER side padding as requested */
             display: grid;
             grid-template-columns: 280px 1fr 300px;
             gap: 40px;
-            /* Increased gap */
             align-items: start;
         }
 
