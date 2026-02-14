@@ -9,13 +9,12 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
     protected $fillable = [
         'name',
         'email',
         'password',
-         'avatar', // নিশ্চিত করুন এটি fillable এ আছে
+        'avatar', 
         'role',
     ];
 
@@ -24,7 +23,6 @@ class User extends Authenticatable
         return $this->hasMany(Argument::class);
     }
 
-    // ২. ডিবেটে অংশগ্রহণের তথ্য
     public function debates()
     {
         return $this->belongsToMany(Debate::class, 'debate_participants')
@@ -36,16 +34,12 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
         ];
     }
 }

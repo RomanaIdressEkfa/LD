@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Feb 07, 2026 at 08:08 AM
+-- Generation Time: Feb 14, 2026 at 08:08 AM
 -- Server version: 5.7.39
 -- PHP Version: 8.3.29
 
@@ -59,7 +59,24 @@ INSERT INTO `arguments` (`id`, `debate_id`, `user_id`, `side`, `body`, `parent_i
 (15, 2, 1, 'pro', 'fdgfdhfgh', NULL, 'neutral', '2026-02-07 00:54:54', '2026-02-07 00:54:54'),
 (16, 2, 1, 'pro', 'fdghf', 8, 'neutral', '2026-02-07 00:55:27', '2026-02-07 00:55:27'),
 (17, 2, 1, 'pro', 'ghfhfgy', 12, 'neutral', '2026-02-07 01:19:15', '2026-02-07 01:19:15'),
-(18, 2, 1, 'pro', 'hkjojkjhuh', 4, 'neutral', '2026-02-07 02:06:43', '2026-02-07 02:06:43');
+(18, 2, 1, 'pro', 'hkjojkjhuh', 4, 'neutral', '2026-02-07 02:06:43', '2026-02-07 02:06:43'),
+(19, 2, 1, 'pro', 'Test', NULL, 'neutral', '2026-02-07 02:42:51', '2026-02-07 02:42:51'),
+(20, 2, 1, 'con', 'ertetr', 19, 'neutral', '2026-02-07 02:55:33', '2026-02-07 02:55:33'),
+(21, 2, 1, 'con', 'try', NULL, 'neutral', '2026-02-07 02:57:43', '2026-02-07 02:57:43'),
+(22, 2, 1, 'con', 'jhh', NULL, 'neutral', '2026-02-07 23:21:08', '2026-02-07 23:21:08'),
+(23, 2, 3, 'con', 'Hiii', NULL, 'neutral', '2026-02-08 00:04:34', '2026-02-08 00:04:34'),
+(24, 2, 3, 'pro', 'fhghghgh', 20, 'neutral', '2026-02-08 00:04:55', '2026-02-08 00:04:55'),
+(25, 2, 3, 'pro', 'hfghffg', 22, 'neutral', '2026-02-08 00:09:37', '2026-02-08 00:09:37'),
+(26, 2, 3, 'con', 'I am agreed', NULL, 'neutral', '2026-02-08 02:13:24', '2026-02-08 02:13:24'),
+(27, 2, 4, 'con', 'xcvxv', 26, 'neutral', '2026-02-09 03:57:28', '2026-02-09 03:57:28'),
+(28, 2, 5, 'pro', 'sddgdgdfg', 13, 'neutral', '2026-02-13 22:12:14', '2026-02-13 22:12:14'),
+(29, 2, 5, 'pro', 'dfgfdgfdg', 27, 'neutral', '2026-02-13 22:12:33', '2026-02-13 22:12:33'),
+(30, 2, 5, 'pro', 'fgghfhf', 29, 'neutral', '2026-02-13 22:20:16', '2026-02-13 22:20:16'),
+(31, 2, 5, 'pro', 'test fdgfhfgh', 27, 'neutral', '2026-02-13 22:33:38', '2026-02-13 22:33:38'),
+(32, 2, 5, 'pro', 'x sfddfdf', 30, 'neutral', '2026-02-13 23:06:03', '2026-02-13 23:06:03'),
+(33, 2, 1, 'con', 'test hgjgjghj', 27, 'neutral', '2026-02-14 01:06:22', '2026-02-14 01:06:22'),
+(34, 2, 1, 'pro', '<span class=\"mention-tag\" contenteditable=\"false\">test</span>&nbsp;fgfgfg', 27, 'neutral', '2026-02-14 01:12:39', '2026-02-14 01:12:39'),
+(35, 2, 1, 'pro', '<span class=\"mention-tag\" contenteditable=\"false\">Romana Idress Ekfa</span>&nbsp;Testttt', 26, 'neutral', '2026-02-14 01:12:54', '2026-02-14 01:12:54');
 
 -- --------------------------------------------------------
 
@@ -137,7 +154,10 @@ CREATE TABLE `debate_participants` (
 --
 
 INSERT INTO `debate_participants` (`id`, `debate_id`, `user_id`, `side`, `created_at`, `updated_at`) VALUES
-(1, 2, 1, 'pro', '2026-02-07 00:54:42', '2026-02-07 00:54:42');
+(1, 2, 1, 'pro', '2026-02-07 00:54:42', '2026-02-07 00:54:42'),
+(2, 2, 3, 'con', '2026-02-08 00:03:21', '2026-02-08 00:03:21'),
+(3, 2, 4, 'pro', '2026-02-09 03:47:19', '2026-02-09 03:47:19'),
+(4, 2, 5, 'con', '2026-02-13 22:01:41', '2026-02-13 22:01:41');
 
 -- --------------------------------------------------------
 
@@ -247,7 +267,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('CG7qrxfeTM2eXofC6NtGkvpoQUsk65HBy9ykeOLE', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoidkhDNlpVRUNOSTFGNWdKSld1dkdCSm5XcjhGenlnVXltZnNEUWV5dyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjQ6Imh0dHA6Ly9sb2dpYy1kZWJhdGUudGVzdCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTt9', 1770451603);
+('69z6CUVwVMDgdNY1GXMjQpDP2ZcxiqfHcTJKvnaC', 5, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoibVNHNmpLUkZtdWRSbnQ2UWtaeEZrMnNmMGNzOVUwbEEyNXk1c3p2cyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjQ6Imh0dHA6Ly9sb2dpYy1kZWJhdGUudGVzdCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6NTt9', 1771055470),
+('YApxPjaMUkGVm9nWTlecdP3Vhtr3K7l9xZpNPxj4', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiT2QzTXlDVXhtOGFkWDg5YW5xakRvTTZKMkJIWXJ1U1FpRElYRE9wVyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly9sb2dpYy1kZWJhdGUudGVzdC8/c29ydD1sYXRlc3QiO3M6NToicm91dGUiO3M6NDoiaG9tZSI7fXM6MzoidXJsIjthOjA6e31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1771056121);
 
 -- --------------------------------------------------------
 
@@ -273,8 +294,11 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `role`, `remember_token`, `created_at`, `updated_at`, `avatar`) VALUES
-(1, 'Logically Debate Admin', 'admin@gmail.com', '2026-02-02 00:06:17', '$2y$12$FEoB0/q7h.DWK3Et6q1mc.GtZ/CpXaNnc.IdbFmTw8PJFySzfn3rG', 'admin', '3fig9BfdMM9mGjkroDspgb3tb0saCz0oAjAwxOKFGYDNTTAWDhCVKUyaxrab', '2026-02-02 00:06:18', '2026-02-02 00:06:18', NULL),
-(2, 'Romana Idress Ekfa', 'logicallydebate@gmail.com', NULL, '$2y$12$.YXnYTHRKvuB.zUX5EIrXuesAf88vuKIc.SU6P3UwiTuRFIXhWyB2', 'user', NULL, '2026-02-02 00:07:58', '2026-02-02 00:07:58', NULL);
+(1, 'Logically Debate Admin', 'admin@gmail.com', '2026-02-02 00:06:17', '$2y$12$FEoB0/q7h.DWK3Et6q1mc.GtZ/CpXaNnc.IdbFmTw8PJFySzfn3rG', 'admin', 'ycrU9xylMZLL2jv4jVlnffFMAR6x6MXANyV5Io4onddRVIGpJQADRxjofhH5', '2026-02-02 00:06:18', '2026-02-02 00:06:18', NULL),
+(2, 'Romana Idress Ekfa', 'logicallydebate@gmail.com', NULL, '$2y$12$.YXnYTHRKvuB.zUX5EIrXuesAf88vuKIc.SU6P3UwiTuRFIXhWyB2', 'user', NULL, '2026-02-02 00:07:58', '2026-02-02 00:07:58', NULL),
+(3, 'Romana Idress Ekfa', 'romana-idress-ekfa_1770530600@guest.com', NULL, '$2y$12$mkEI4mKhHsFo4EFPfson8OBgJrUr6ooYqtOvjOAP20mWrwjRAb/D2', 'user', 'IzfIuvrnbeErcXi6KCh42UpBsSeY97lEyU82oMqOfX14gQcmndpbH7EadhCS', '2026-02-08 00:03:21', '2026-02-08 00:03:21', 'avatars/NLfz57GjwC6TzEUhphxhTNLysR24AwRjknJa98F5.jpg'),
+(4, 'test', 'test@gmail.com', NULL, '$2y$12$2dShxgA9EnG/DDNv8jLQYOuPKsG5HW7/BgbfEv7fK6CKq95f1oRKC', 'user', 'OXyGfUZjc7dqQvnvzJiyysmwCeGLYVkuGfNAdlmMD6iiJ2XZllkfS3a3KgyA', '2026-02-09 03:47:19', '2026-02-09 03:47:19', 'avatars/RgoupbWF3A8bL6LYTvnFQWShQivuzm8ZYjzI7UHo.webp'),
+(5, 'x', 'x@gmail.com', NULL, '$2y$12$kC/xH0HKBeE5kl5Ni8JdQ.8ci8Vr2jDN8wTeG5HRmYegUPC4G28.6', 'user', 'dQD9lJWJVKWkcUpX5ZopLuK9Dw3HWdaTV6EkDxJvDGkLOZBO7JLNP3ck9VwN', '2026-02-13 22:01:41', '2026-02-13 22:01:41', 'avatars/OiYWFipyDsqHwqesub6q0cwFo3oZY7oswE1qpGtl.png');
 
 -- --------------------------------------------------------
 
@@ -296,11 +320,16 @@ CREATE TABLE `votes` (
 --
 
 INSERT INTO `votes` (`id`, `user_id`, `argument_id`, `type`, `created_at`, `updated_at`) VALUES
-(2, 1, 3, 'disagree', '2026-02-02 06:03:12', '2026-02-05 00:50:30'),
-(3, 1, 4, 'agree', '2026-02-02 06:03:18', '2026-02-05 00:47:38'),
 (4, 1, 5, 'disagree', '2026-02-05 00:50:33', '2026-02-05 00:50:37'),
 (5, 1, 10, 'agree', '2026-02-05 05:10:18', '2026-02-05 05:10:18'),
-(6, 1, 9, 'agree', '2026-02-07 00:17:16', '2026-02-07 00:17:16');
+(6, 1, 9, 'agree', '2026-02-07 00:17:16', '2026-02-07 00:17:16'),
+(8, 5, 26, 'agree', '2026-02-14 00:10:47', '2026-02-14 00:10:47'),
+(9, 1, 23, 'agree', '2026-02-14 00:11:17', '2026-02-14 00:11:17'),
+(10, 1, 21, 'agree', '2026-02-14 00:11:30', '2026-02-14 00:11:30'),
+(13, 1, 22, 'agree', '2026-02-14 00:46:45', '2026-02-14 00:46:45'),
+(14, 1, 25, 'agree', '2026-02-14 00:46:57', '2026-02-14 00:46:57'),
+(16, 1, 26, 'disagree', '2026-02-14 00:53:44', '2026-02-14 00:53:44'),
+(17, 1, 29, 'disagree', '2026-02-14 01:00:06', '2026-02-14 01:00:06');
 
 --
 -- Indexes for dumped tables
@@ -406,7 +435,7 @@ ALTER TABLE `votes`
 -- AUTO_INCREMENT for table `arguments`
 --
 ALTER TABLE `arguments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `debates`
@@ -418,7 +447,7 @@ ALTER TABLE `debates`
 -- AUTO_INCREMENT for table `debate_participants`
 --
 ALTER TABLE `debate_participants`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -442,13 +471,13 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `votes`
 --
 ALTER TABLE `votes`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- Constraints for dumped tables

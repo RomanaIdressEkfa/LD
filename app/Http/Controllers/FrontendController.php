@@ -14,37 +14,42 @@ use Illuminate\Support\Str;
 
 class FrontendController extends Controller
 {
-    public function index() {
-        $debate = Debate::where('status', 'active')->latest()->first();
+   public function index(Request $request) { 
+    $debate = Debate::where('status', 'active')->latest()->first();
+    $roots = collect();
 
-        $roots = collect();
-        if ($debate) {
-            $roots = $debate->arguments()
-                ->whereNull('parent_id')
-                ->with(['user', 'votes', 'replies.user', 'replies.votes'])
-                ->latest()
-                ->get();
+    if ($debate) {
+        $query = $debate->arguments()
+            ->whereNull('parent_id')
+            ->with(['user', 'votes', 'replies.user', 'replies.votes'])
+            ->withCount('votes'); 
+
+        if ($request->get('sort') == 'latest') {
+            $query->latest(); 
+        } else {
+            $query->orderBy('votes_count', 'desc')->latest();
         }
 
-        // লজিক: ইউজার লগইন থাকলেও, সে এই ডিবেটে জয়েন করেছে কিনা চেক করা
-        $userSide = null;
-        if(Auth::check() && $debate) {
-            $participant = DebateParticipant::where('debate_id', $debate->id)
-                ->where('user_id', Auth::id())
-                ->first();
-            
-            if($participant) {
-                $userSide = $participant->side;
-            }
-        }
-
-        return view('home', compact('debate', 'roots', 'userSide'));
+        $roots = $query->get();
     }
+
+    $userSide = null;
+    if(Auth::check() && $debate) {
+        $participant = DebateParticipant::where('debate_id', $debate->id)
+            ->where('user_id', Auth::id())
+            ->first();
+        
+        if($participant) {
+            $userSide = $participant->side;
+        }
+    }
+
+    return view('home', compact('debate', 'roots', 'userSide'));
+}
 
     public function showJoinForm($debateId) {
         $debate = Debate::findOrFail($debateId);
-        
-        // যদি ইউজার অলরেডি জয়েন করা থাকে (পক্ষ নিয়ে থাকে), তবে তাকে জয়েন পেজে যেতে দেব না
+    
         if(Auth::check()) {
             $participant = DebateParticipant::where('debate_id', $debateId)
                 ->where('user_id', Auth::id())
@@ -59,7 +64,6 @@ class FrontendController extends Controller
     }
 
   public function processJoin(Request $request, $debateId) {
-    // ১. এডমিন চেক
     if (Auth::check() && Auth::user()->role === 'admin') {
         Auth::logout();
         return redirect()->route('debate.join_form', $debateId)
@@ -68,9 +72,7 @@ class FrontendController extends Controller
 
     $user = Auth::user();
 
-    // ২. যদি নতুন ইউজার হয় (রেজিস্ট্রেশন)
     if (!$user) {
-        // ভ্যালিডেশন
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -84,24 +86,20 @@ class FrontendController extends Controller
             $avatarPath = $request->file('avatar')->store('avatars', 'public');
         }
 
-        // ইউজার তৈরি (Create User with provided credentials)
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->email, // আসল ইমেইল
-            'password' => Hash::make($request->password), // আসল পাসওয়ার্ড
+            'email' => $request->email, 
+            'password' => Hash::make($request->password),
             'avatar' => $avatarPath,
             'role' => 'user'
         ]);
 
-        // লগইন করানো
         Auth::login($user, true);
     } else {
-        // বিদ্যমান ইউজার হলে শুধু সাইড চেক
         $request->validate([
             'side' => 'required|in:pro,con',
         ]);
-        
-        // ছবি আপডেট (অপশনাল)
+
         if ($request->hasFile('avatar')) {
             $request->validate(['avatar' => 'nullable|image|max:5120']);
             $user->avatar = $request->file('avatar')->store('avatars', 'public');
@@ -109,7 +107,6 @@ class FrontendController extends Controller
         }
     }
 
-    // ৩. ডিবেটে এন্ট্রি
     DebateParticipant::updateOrCreate(
         [
             'debate_id' => $debateId,
@@ -127,7 +124,6 @@ class FrontendController extends Controller
             return redirect()->route('debate.join_form', $debateId);
         }
 
-        // চেক: ইউজার কি পার্টিসিপেন্ট? (এডমিন হলেও এখানে আটকাবে যদি সে জয়েন না করে)
         $participant = DebateParticipant::where('debate_id', $debateId)
             ->where('user_id', Auth::id())
             ->first();
@@ -138,24 +134,59 @@ class FrontendController extends Controller
         }
 
         $request->validate(['body' => 'required']);
+        $cleanBody = strip_tags($request->body, '<span><br>');
 
        Argument::create([
             'debate_id' => $debateId,
             'user_id' => Auth::id(),
-            // Use the request input (clicked button value), fallback to participant side if missing
             'side' => $request->side ?? $participant->side, 
-            'body' => $request->body,
+            'body' => $cleanBody,
             'parent_id' => $request->parent_id ?? null,
             'reply_type' => $request->reply_type ?? 'neutral',
         ]);
 
-        return redirect()->back()->with('success', 'Comment posted!');
+        return redirect()->back()->with('success', 'Comment posted!')->with('expanded_id', $request->parent_id); ;
     }
 
-    // vote method same as before...
-    public function vote(Request $request, $argumentId) {
-        if(!Auth::check()) return redirect()->route('debate.join_form', Argument::find($argumentId)->debate_id);
-        Vote::updateOrCreate(['user_id' => Auth::id(), 'argument_id' => $argumentId], ['type' => $request->type]);
-        return redirect()->back();
+
+public function vote(Request $request, $argumentId) {
+    if(!Auth::check()) {
+        return response()->json(['status' => 'login_required', 'debate_id' =>Argument::find($argumentId)->debate_id]);
     }
+
+    $userId = Auth::id();
+    $type = $request->type; 
+    $existingVote = Vote::where('user_id', $userId)
+                        ->where('argument_id', $argumentId)
+                        ->first();
+
+    if ($existingVote) {
+        if ($existingVote->type == $type) {
+            $existingVote->delete();
+            $userVote = null;
+        } else {
+            $existingVote->update(['type' => $type]);
+            $userVote = $type;
+        }
+    } else {
+        Vote::create([
+            'user_id' => $userId,
+            'argument_id' => $argumentId,
+            'type' => $type
+        ]);
+        $userVote = $type;
+    }
+
+    $argument = Argument::withCount([
+        'votes as agree_count' => function ($query) { $query->where('type', 'agree'); },
+        'votes as disagree_count' => function ($query) { $query->where('type', 'disagree'); }
+    ])->find($argumentId);
+
+    return response()->json([
+        'status' => 'success',
+        'agree_count' => $argument->agree_count,
+        'disagree_count' => $argument->disagree_count,
+        'user_vote' => $userVote
+    ]);
+}
 }
